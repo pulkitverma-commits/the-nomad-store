@@ -6,6 +6,7 @@ import SectionHead from '@/components/SectionHead';
 import Countdown from '@/components/Countdown';
 import WorldMap from '@/components/WorldMap';
 import NotifyButton from '@/components/NotifyButton';
+import HeroPostcards from '@/components/HeroPostcards';
 
 export const revalidate = 60;
 
@@ -117,49 +118,7 @@ export default async function Home() {
               Travel by country
             </Link>
           </div>
-          <div style={{ maxWidth: 860, margin: '0 auto' }}>
-            <div
-              style={{
-                background: '#FFFDF4',
-                padding: '16px 16px 0',
-                borderRadius: 6,
-                boxShadow: '0 24px 60px rgba(17,17,17,0.18)',
-                transform: 'rotate(-2deg)',
-              }}
-            >
-              <div style={{ height: 400, overflow: 'hidden' }}>
-                <img
-                  src={img('1607556672044-6110fc499247', 1200)}
-                  alt="A quiet Kyoto street, early morning"
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                />
-              </div>
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  gap: 20,
-                  padding: '16px 8px',
-                }}
-              >
-                <div className="serif" style={{ fontStyle: 'italic', fontSize: 20, color: '#4A4A47' }}>
-                  Kyoto, 06:40 — the morning we found the matcha bowls
-                </div>
-                <div
-                  style={{
-                    fontSize: 10,
-                    letterSpacing: '0.24em',
-                    textTransform: 'uppercase',
-                    color: '#B4B0A6',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  Postcard № 006
-                </div>
-              </div>
-            </div>
-          </div>
+          <HeroPostcards />
         </div>
         <div
           className="hero-sticker"
