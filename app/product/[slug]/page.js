@@ -21,7 +21,10 @@ export async function generateMetadata({ params }) {
   return {
     title: `${p.name} — Handcrafted in ${p.city}, ${p.country}`,
     description: `${p.description} ${p.material}, ${inr(p.price)}. A unique handcrafted object discovered in ${p.city} and brought home to India by The Nomad.`,
-    openGraph: { images: [productImg(p, 1200)] },
+    // No openGraph.images here on purpose. Setting it would override the
+    // opengraph-image.js file convention in this folder, which composes the
+    // photograph with the object's name, origin and price — a far better card
+    // than the bare photograph on its own.
   };
 }
 

@@ -45,6 +45,15 @@ export const metadata = {
     description:
       'A collection of remarkable handcrafted objects discovered across cities, cultures and corners of the world — brought home to India.',
     type: 'website',
+    siteName: 'The Nomad',
+  },
+  // The card picture itself comes from the opengraph-image / twitter-image file
+  // conventions, so only the card shape and its words are set here.
+  twitter: {
+    card: 'summary_large_image',
+    title: 'The Nomad — Objects Worth Bringing Home',
+    description:
+      'A collection of remarkable handcrafted objects discovered across cities, cultures and corners of the world — brought home to India.',
   },
 };
 

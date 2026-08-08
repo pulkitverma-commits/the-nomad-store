@@ -4,6 +4,25 @@ import SubscribeForm from '@/components/SubscribeForm';
 
 export const revalidate = 60;
 
+// Each drop row carries its size in the free-text note — "24 objects · ceramics,
+// cork, tile". Read the leading number if there is one and count the row as zero
+// if there is not, rather than putting NaN on the page.
+function objectsIn(note) {
+  const match = /^\s*(\d+)/.exec(String(note ?? ''));
+  return match ? parseInt(match[1], 10) : 0;
+}
+
+const NUMBER_WORDS = [
+  'Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine',
+  'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen',
+  'Seventeen', 'Eighteen', 'Nineteen', 'Twenty',
+];
+
+// Spelled out to match the rest of the copy; digits once we run out of words.
+function inWords(n) {
+  return NUMBER_WORDS[n] || String(n);
+}
+
 export const metadata = {
   title: 'Nomad Drops — One Trip, Released All at Once',
   description:
@@ -12,6 +31,8 @@ export const metadata = {
 
 export default async function DropsPage() {
   const drops = await getDrops();
+  const released = drops.length;
+  const objectCount = drops.reduce((total, d) => total + objectsIn(d.note), 0);
   return (
     <main>
       <section style={{ background: '#111111', color: '#FFFFFF', padding: '110px 40px' }}>
@@ -64,7 +85,7 @@ export default async function DropsPage() {
         >
           <h2 className="serif" style={{ fontWeight: 300, fontSize: 44, margin: 0 }}>Previous drops</h2>
           <div style={{ fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#6B6B68' }}>
-            Five released · 138 objects
+            {`${inWords(released)} released · ${objectCount} objects`}
           </div>
         </div>
         {drops.map((d) => (
