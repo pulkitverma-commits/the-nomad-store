@@ -198,6 +198,8 @@ export default async function CountryPage({ params }) {
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'flex-end',
+            flexWrap: 'wrap',
+            gap: 12,
             borderBottom: '1px solid #E8E8E5',
             paddingBottom: 24,
             marginBottom: 48,

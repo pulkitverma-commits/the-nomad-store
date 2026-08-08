@@ -58,6 +58,8 @@ export default async function DropsPage() {
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'flex-end',
+            flexWrap: 'wrap',
+            gap: 12,
           }}
         >
           <h2 className="serif" style={{ fontWeight: 300, fontSize: 44, margin: 0 }}>Previous drops</h2>
