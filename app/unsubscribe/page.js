@@ -1,7 +1,7 @@
 import UnsubscribeClient from './UnsubscribeClient';
 
 export const metadata = {
-  title: 'Unsubscribe — The Nomad',
+  title: 'Unsubscribe',
   robots: { index: false, follow: false },
 };
 

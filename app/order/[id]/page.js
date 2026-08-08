@@ -4,7 +4,7 @@ import OrderPassport from './OrderPassport';
 import OrderClient from './OrderClient';
 
 export const metadata = {
-  title: 'Order — The Nomad',
+  title: 'Order',
   robots: { index: false, follow: false },
 };
 

@@ -11,7 +11,7 @@ import HeroPostcards from '@/components/HeroPostcards';
 export const revalidate = 60;
 
 export const metadata = {
-  title: 'The Nomad — Handcrafted Home Decor & Travel Gifts from 18 Countries',
+  title: { absolute: 'The Nomad — Handcrafted Home Decor & Travel Gifts from 18 Countries' },
   description:
     'Shop unique handcrafted home decor and artisan travel gifts — handmade ceramics, brass, marble and letterpress objects discovered across 18 countries, brought home to India. Nothing over ₹5,000.',
 };

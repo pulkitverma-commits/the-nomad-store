@@ -1,7 +1,7 @@
 import AdminApp from '@/components/admin/AdminApp';
 
 export const metadata = {
-  title: 'Admin — The Nomad',
+  title: 'Admin',
   robots: { index: false, follow: false },
 };
 

@@ -5,7 +5,7 @@ import { img } from '@/lib/format';
 export const revalidate = 60;
 
 export const metadata = {
-  title: 'The Nomad Journal — Notes from the Places Our Objects Come From',
+  title: 'Journal — Notes from the Places Our Objects Come From',
   description:
     'City guides, field notes and craft stories from The Nomad’s collection trips: Kyoto, Lisbon, Seoul, Istanbul, Marrakech and beyond.',
 };

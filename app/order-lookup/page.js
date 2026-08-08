@@ -1,7 +1,7 @@
 import LookupClient from './LookupClient';
 
 export const metadata = {
-  title: 'Find an order — The Nomad',
+  title: 'Find an order',
   robots: { index: false, follow: false },
 };
 
