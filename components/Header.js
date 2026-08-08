@@ -1,9 +1,11 @@
 'use client';
 import Link from 'next/link';
 import { useUi } from './Ui';
+import { useCustomerSession } from '@/lib/customerAuth';
 
 export default function Header() {
   const { bag, setBagOpen, setSearchOpen, saved, loaded } = useUi();
+  const { session, loading: authLoading } = useCustomerSession();
   const count = bag.reduce((t, b) => t + b.qty, 0);
   // Only after localStorage has been read, so server HTML and first client
   // paint agree and the number does not flicker in.
@@ -12,7 +14,10 @@ export default function Header() {
     <header style={{ position: 'sticky', top: 16, zIndex: 60, padding: '0 24px' }}>
       {/* Kept local rather than in globals.css so the pill bar owns its own
           breakpoint: below 640px the Saved link collapses to just the heart. */}
-      <style>{'@media (max-width:640px){.saved-word{display:none}}'}</style>
+      <style>
+        {'@media (max-width:640px){.saved-word{display:none}}' +
+          '@media (max-width:560px){.account-link{display:none}}'}
+      </style>
       <div
         style={{
           maxWidth: 1200,
@@ -84,6 +89,18 @@ export default function Header() {
             <span className="saved-word">Saved</span>
             {savedCount > 0 ? <span>({savedCount})</span> : null}
           </Link>
+          {/* Signed out this reads "Sign in"; signed in it becomes "Account".
+              Held back until the session is known so the two do not swap in
+              front of the reader on every page load. */}
+          {!authLoading && (
+            <Link
+              className="navlink account-link"
+              href={session ? '/account' : '/signin'}
+              style={{ fontSize: 13.5, fontWeight: 500, padding: '10px 12px', whiteSpace: 'nowrap' }}
+            >
+              {session ? 'Account' : 'Sign in'}
+            </Link>
+          )}
           <div
             className="btn-dark"
             onClick={() => setBagOpen(true)}
