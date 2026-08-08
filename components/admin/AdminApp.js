@@ -21,8 +21,10 @@ function Login({ onError, error }) {
     setBusy(false);
   };
   const magicLink = async () => {
+    setNote('');
     if (!/.+@.+\..+/.test(email)) return onError('Enter your email above first, then request the link.');
     setBusy(true);
+    onError('');
     const { error } = await sb.auth.signInWithOtp({
       email,
       options: {
@@ -34,8 +36,15 @@ function Login({ onError, error }) {
       },
     });
     setBusy(false);
-    if (error) onError(error.message);
-    else setNote('Magic link sent — check your inbox.');
+    if (error) {
+      // "Signups not allowed for otp" is Supabase telling us the address has no
+      // account. Say that in English rather than leaking the API's wording.
+      onError(
+        /signups not allowed/i.test(error.message)
+          ? 'No back-office account for that address. Ask an admin to create one first.'
+          : error.message
+      );
+    } else setNote('Magic link sent — check your inbox.');
   };
   const oauth = (provider) => async () => {
     const { error } = await sb.auth.signInWithOAuth({
