@@ -8,9 +8,9 @@ import { countrySlug } from '@/lib/format';
 // Public frontend key (MapTiler keys are client-side by design; restrict by
 // HTTP origin in MapTiler Cloud -> API keys for extra safety).
 const MAPTILER_KEY = process.env.NEXT_PUBLIC_MAPTILER_KEY || 'Zarnd4HdiakX7HdqsByF';
-// "backdrop" — MapTiler's muted, near-monochrome cartography; sits well in the
-// store's cream/editorial design. Free plan, attribution kept (required).
-const STYLE = `https://api.maptiler.com/maps/backdrop/style.json?key=${MAPTILER_KEY}`;
+// "landscape" — MapTiler's soft terrain cartography; muted greens and creams
+// that sit well with the store's editorial palette. Attribution kept (required on free plan).
+const STYLE = `https://api.maptiler.com/maps/landscape/style.json?key=${MAPTILER_KEY}`;
 
 export default function WorldMap({ cities, aspect = '2.2/1', big = false }) {
   const el = useRef(null);
