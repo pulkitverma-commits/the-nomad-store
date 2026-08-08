@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
-import { useCustomerSession, useEnabledProviders } from '@/lib/customerAuth';
+import { useCustomerSession, useEnabledProviders, OAUTH_PROVIDERS } from '@/lib/customerAuth';
 
 const label = {
   fontSize: 10,
@@ -54,6 +54,12 @@ export default function SignInClient() {
 
   const oauth = (p) => async () => {
     setError('');
+    // signInWithOAuth navigates away instead of returning an error, so a
+    // provider Supabase has not been given credentials for would land the
+    // customer on a raw JSON error page. Check before moving.
+    if (!live.some((x) => x.key === p.key)) {
+      return setError(`${p.name} sign-in is not available yet. Use the email link above.`);
+    }
     const { error: e } = await sb.auth.signInWithOAuth({
       provider: p.key,
       options: {
@@ -140,36 +146,40 @@ export default function SignInClient() {
               {busy ? 'Sending…' : 'Email me a link'}
             </button>
 
-            {live.length > 0 && (
-              <>
-                <div style={{ ...label, textAlign: 'center', margin: '10px 0 2px', color: '#B4B0A6' }}>
-                  or
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                  {live.map((p) => (
-                    <button
-                      key={p.key}
-                      onClick={oauth(p)}
-                      style={{
-                        background: 'none',
-                        border: '1px solid #E8E8E5',
-                        padding: 15,
-                        cursor: 'pointer',
-                        font: 'inherit',
-                        fontSize: 11,
-                        letterSpacing: '0.18em',
-                        textTransform: 'uppercase',
-                      }}
-                    >
-                      {p.name}
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
-            {live.length === 0 && pending.length > 0 && (
+            <div style={{ ...label, textAlign: 'center', margin: '10px 0 2px', color: '#B4B0A6' }}>
+              or
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              {OAUTH_PROVIDERS.map((p) => {
+                const on = live.some((x) => x.key === p.key);
+                return (
+                  <button
+                    key={p.key}
+                    onClick={oauth(p)}
+                    title={on ? undefined : `${p.name} sign-in is not available yet`}
+                    style={{
+                      background: 'none',
+                      border: '1px solid #E8E8E5',
+                      padding: 15,
+                      cursor: 'pointer',
+                      font: 'inherit',
+                      fontSize: 11,
+                      letterSpacing: '0.18em',
+                      textTransform: 'uppercase',
+                      // Dimmed rather than hidden: the option is real, it just
+                      // has no credentials behind it yet.
+                      color: on ? '#111111' : '#B4B0A6',
+                    }}
+                  >
+                    {p.name}
+                  </button>
+                );
+              })}
+            </div>
+            {pending.length > 0 && (
               <div style={{ fontSize: 11, lineHeight: 1.7, color: '#B4B0A6' }}>
-                {pending.map((p) => p.name).join(', ')} sign-in appear here once switched on.
+                {pending.map((p) => p.name).join(', ')} still need their apps connecting — the email
+                link works now.
               </div>
             )}
           </div>

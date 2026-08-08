@@ -1,9 +1,11 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useUi } from '@/components/Ui';
 import { inr, productImg } from '@/lib/format';
+import { useCustomerSession } from '@/lib/customerAuth';
+import { supabaseBrowser } from '@/lib/supabaseBrowser';
 
 const PAY_METHODS = [
   ['UPI', 'GPay · PhonePe · Paytm'],
@@ -33,6 +35,7 @@ function Field({ placeholder, value, onChange, span }) {
 export default function CheckoutClient() {
   const { bag, clearBag } = useUi();
   const router = useRouter();
+  const { session, loading: authLoading, email: accountEmail } = useCustomerSession();
   const [form, setForm] = useState({
     full_name: '',
     mobile: '',
@@ -47,6 +50,36 @@ export default function CheckoutClient() {
   const [giftMessage, setGiftMessage] = useState('');
   const [status, setStatus] = useState('idle');
   const [error, setError] = useState('');
+
+  // Signing in is the price of admission now, so it should at least save the
+  // customer some typing: the account email, and the default address if there
+  // is one. Never overwrite something already typed into the form.
+  useEffect(() => {
+    if (!session) return;
+    let alive = true;
+    setForm((f) => (f.email ? f : { ...f, email: accountEmail }));
+    supabaseBrowser()
+      .from('addresses')
+      .select('*')
+      .eq('is_default', true)
+      .limit(1)
+      .then(({ data }) => {
+        const a = data && data[0];
+        if (!alive || !a) return;
+        setForm((f) => ({
+          ...f,
+          full_name: f.full_name || a.full_name || '',
+          mobile: f.mobile || a.mobile || '',
+          address: f.address || a.address || '',
+          city: f.city || a.city || '',
+          state: f.state || a.state || '',
+          pin: f.pin || a.pin || '',
+        }));
+      });
+    return () => {
+      alive = false;
+    };
+  }, [session, accountEmail]);
 
   const subtotal = bag.reduce((t, b) => t + b.price * b.qty, 0);
   const giftFee = gift ? 250 : 0;
@@ -87,6 +120,12 @@ export default function CheckoutClient() {
           })
         );
       } catch (e) {}
+      // The order was created by the API with the anon key, so it has no
+      // user_id. Attach it to this account before we navigate away. Failure is
+      // survivable — the RLS policy also matches on the verified email.
+      try {
+        await supabaseBrowser().rpc('claim_my_orders');
+      } catch (e) {}
       clearBag();
       router.push(
         data.lookup_token
@@ -98,6 +137,82 @@ export default function CheckoutClient() {
       setError(e.message);
     }
   };
+
+  // Until we know, render nothing rather than flashing the sign-in wall at
+  // somebody who is already signed in.
+  if (authLoading) return null;
+
+  // Checkout is behind the account now. The bag stays exactly where it is —
+  // it lives in this browser, so it survives the trip out to email and back.
+  if (!session) {
+    return (
+      <main style={{ maxWidth: 1240, margin: '0 auto', padding: '70px 40px 0' }}>
+        <h1 className="serif" style={{ fontWeight: 300, fontSize: 56, margin: '0 0 48px' }}>Checkout</h1>
+        <div className="split" style={{ display: 'grid', gridTemplateColumns: '1.35fr 1fr', gap: 80, alignItems: 'start' }}>
+          <div>
+            <div style={{ ...sectionLabel }}>One step first</div>
+            <div className="serif" style={{ fontWeight: 300, fontSize: 40, lineHeight: 1.1, margin: '0 0 20px' }}>
+              Sign in to finish
+            </div>
+            <p style={{ fontSize: 15, lineHeight: 1.8, color: '#6B6B68', maxWidth: '52ch', margin: '0 0 14px' }}>
+              Every object here is one of a kind, so an order is a record worth keeping. Signing in
+              means this one lands in your account with its passport, its tracking and its receipt —
+              and that the next time you buy, we already know where to send it.
+            </p>
+            <p style={{ fontSize: 13, lineHeight: 1.8, color: '#B4B0A6', maxWidth: '52ch', margin: '0 0 34px' }}>
+              Your bag is kept in this browser. Nothing in it is lost while you fetch the link.
+            </p>
+            <Link
+              href="/signin?next=%2Fcheckout"
+              className="btn-dark"
+              style={{
+                display: 'inline-block',
+                padding: '16px 34px',
+                fontSize: 11,
+                letterSpacing: '0.18em',
+                textTransform: 'uppercase',
+              }}
+            >
+              Sign in to check out →
+            </Link>
+            <div style={{ marginTop: 34, paddingTop: 22, borderTop: '1px solid #E8E8E5', maxWidth: '52ch' }}>
+              <p style={{ fontSize: 12, lineHeight: 1.8, color: '#B4B0A6', margin: 0 }}>
+                Bought from us before as a guest? Sign in with the same address and those orders
+                come with you.
+              </p>
+            </div>
+          </div>
+          <div style={{ background: '#FFFFFF', border: '1px solid #E8E8E5', padding: 32 }}>
+            <div style={{ ...sectionLabel }}>In your bag</div>
+            {bag.map((b) => (
+              <div
+                key={b.id}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  gap: 16,
+                  padding: '10px 0',
+                  fontSize: 13,
+                  borderBottom: '1px solid #F2F1ED',
+                }}
+              >
+                <span>
+                  {b.name}
+                  {b.qty > 1 ? ` × ${b.qty}` : ''}
+                </span>
+                <span style={{ whiteSpace: 'nowrap' }}>{inr(b.price * b.qty)}</span>
+              </div>
+            ))}
+            <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: 18, fontSize: 15 }}>
+              <span>Subtotal</span>
+              <span>{inr(subtotal)}</span>
+            </div>
+          </div>
+        </div>
+        <div style={{ height: 120 }} />
+      </main>
+    );
+  }
 
   return (
     <main style={{ maxWidth: 1240, margin: '0 auto', padding: '70px 40px 0' }}>

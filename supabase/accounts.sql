@@ -175,6 +175,32 @@ create policy order_items_own_select on order_items
     )
   );
 
+-- Stamp the customer's id onto any order of theirs that does not have one --
+-- orders placed as a guest, and orders placed through the API, which runs with
+-- the anon key and so has no auth.uid() of its own. Called after sign-in and
+-- after checkout. Matching stays on the verified email, so this can only ever
+-- claim orders the customer could already read.
+create or replace function claim_my_orders()
+returns integer
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_email text := lower(coalesce(auth.jwt() ->> 'email', ''));
+  v_n     integer;
+begin
+  if v_email = '' or auth.uid() is null then
+    raise exception 'not signed in';
+  end if;
+  update orders set user_id = auth.uid()
+   where user_id is null and lower(email) = v_email;
+  get diagnostics v_n = row_count;
+  return v_n;
+end $$;
+
+grant execute on function claim_my_orders() to authenticated;
+
 -- ── Email preferences ───────────────────────────────────────────────────────
 -- subscribers/unsubscribes are keyed by email, not by user. These two wrap
 -- them so the account page can read and write preferences for the signed-in
