@@ -464,6 +464,125 @@ function Signups() {
   );
 }
 
+
+/* ─────────────── EMAILS ─────────────── */
+const MAIL_KINDS = [
+  ['welcome', 'Newsletter welcome', 'Sent on first newsletter signup — features a live object from the collection'],
+  ['drops', 'Drop list', 'Sent when someone joins the drop list — live countdown to the next drop'],
+  ['notify', 'Notify me', 'Sent when someone watches an in-transit object'],
+  ['order', 'Order confirmation', 'Sent after checkout — an Object Passport for every item'],
+];
+
+function Emails() {
+  const sb = supabaseBrowser();
+  const [log, setLog] = useState([]);
+  const [preview, setPreview] = useState(null);
+  const [token, setToken] = useState('');
+
+  useEffect(() => {
+    sb.auth.getSession().then(({ data }) => setToken(data?.session?.access_token || ''));
+    sb.from('mail_log')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(50)
+      .then(({ data }) => setLog(data || []));
+  }, [sb]);
+
+  return (
+    <div>
+      <div style={{ ...label, borderBottom: '1px solid #111111', paddingBottom: 12, marginBottom: 18 }}>
+        Templates · previewed with live data
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 14, marginBottom: 44 }}>
+        {MAIL_KINDS.map(([k, title, note]) => (
+          <div key={k} style={{ border: '1px solid #E8E8E5', padding: '20px 22px' }}>
+            <div style={{ fontSize: 15, marginBottom: 8 }}>{title}</div>
+            <div style={{ fontSize: 12, color: '#6B6B68', lineHeight: 1.6, marginBottom: 16 }}>{note}</div>
+            <button style={btnGhost} onClick={() => setPreview(k)}>Preview</button>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ ...label, borderBottom: '1px solid #111111', paddingBottom: 12, marginBottom: 4 }}>
+        Recent sends · {log.length}
+      </div>
+      {log.length === 0 && (
+        <div style={{ fontSize: 13, color: '#B4B0A6', padding: '16px 0' }}>Nothing sent yet.</div>
+      )}
+      {log.map((m) => (
+        <div
+          key={m.id}
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '110px 1fr 2fr auto',
+            gap: 16,
+            alignItems: 'center',
+            padding: '12px 0',
+            borderBottom: '1px solid #F2F1ED',
+            fontSize: 13,
+          }}
+        >
+          <span
+            style={{
+              fontSize: 10,
+              letterSpacing: '0.16em',
+              textTransform: 'uppercase',
+              color: m.status === 'sent' ? '#5F7355' : '#B3402A',
+            }}
+          >
+            {m.kind}
+          </span>
+          <span>{m.email}</span>
+          <span style={{ color: '#6B6B68', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {m.subject || m.error}
+          </span>
+          <span style={{ color: '#B4B0A6', fontSize: 11 }}>
+            {new Date(m.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
+          </span>
+        </div>
+      ))}
+
+      {preview && (
+        <>
+          <div
+            onClick={() => setPreview(null)}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(17,17,17,0.4)', zIndex: 80 }}
+          />
+          <div
+            style={{
+              position: 'fixed',
+              inset: '4% 6%',
+              background: '#FFFFFF',
+              zIndex: 90,
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '0 30px 80px rgba(17,17,17,0.3)',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '18px 24px',
+                borderBottom: '1px solid #E8E8E5',
+              }}
+            >
+              <div style={label}>{MAIL_KINDS.find((k) => k[0] === preview)?.[1]}</div>
+              <div onClick={() => setPreview(null)} style={{ ...label, cursor: 'pointer' }}>Close</div>
+            </div>
+            <iframe
+              title="preview"
+              src={`/api/admin/mail-preview?kind=${preview}&token=${encodeURIComponent(token)}`}
+              style={{ flex: 1, border: 'none', width: '100%' }}
+            />
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 /* ─────────────── SHELL ─────────────── */
 export default function AdminApp() {
   const sb = supabaseBrowser();
@@ -501,6 +620,7 @@ export default function AdminApp() {
     ['products', 'Products'],
     ['orders', 'Orders'],
     ['signups', 'Signups'],
+    ['emails', 'Emails'],
   ];
   return (
     <main style={{ maxWidth: 1100, margin: '0 auto', padding: '60px 32px 0' }}>
@@ -541,6 +661,7 @@ export default function AdminApp() {
       {tab === 'products' && <Products />}
       {tab === 'orders' && <Orders />}
       {tab === 'signups' && <Signups />}
+      {tab === 'emails' && <Emails />}
       <div style={{ height: 80 }} />
     </main>
   );
