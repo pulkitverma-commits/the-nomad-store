@@ -1,17 +1,52 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from '@/lib/supabase';
 import { inr, productImg } from '@/lib/format';
 import { label, th, td, inputStyle, btn, btnGhost, linkAction, InlineConfirm } from './ui';
 import { Journal, Drops, ComingSoon } from './Collections';
 
 /* ─────────────── LOGIN ─────────────── */
+
+// The four social logins we have wired, in the order we want them shown.
+// `key` is the provider name Supabase expects — note LinkedIn's current
+// provider is `linkedin_oidc` (plain `linkedin` is the retired one), and
+// Instagram has no provider of its own: Instagram Login runs through Meta,
+// so it goes via `facebook`.
+const OAUTH_PROVIDERS = [
+  { key: 'google', name: 'Google' },
+  { key: 'azure', name: 'Microsoft' },
+  { key: 'linkedin_oidc', name: 'LinkedIn' },
+  { key: 'facebook', name: 'Instagram / Meta' },
+];
+
 function Login({ onError, error }) {
   const sb = supabaseBrowser();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState('');
+  // Which providers are actually switched on in Supabase. signInWithOAuth
+  // navigates away rather than returning an error, so a provider that is not
+  // enabled dumps the user on a raw JSON error page. Ask Supabase first —
+  // /auth/v1/settings is public — and only offer the ones that will work.
+  // null = not asked yet, so we render nothing rather than flashing buttons.
+  const [enabled, setEnabled] = useState(null);
+
+  useEffect(() => {
+    let alive = true;
+    fetch(`${SUPABASE_URL}/auth/v1/settings`, { headers: { apikey: SUPABASE_ANON_KEY } })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (alive) setEnabled(d?.external || {});
+      })
+      .catch(() => {
+        if (alive) setEnabled({});
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const signIn = async () => {
     setBusy(true);
@@ -46,25 +81,22 @@ function Login({ onError, error }) {
       );
     } else setNote('Magic link sent — check your inbox.');
   };
-  const PROVIDER_NAMES = {
-    google: 'Google',
-    azure: 'Microsoft',
-    linkedin_oidc: 'LinkedIn',
-    facebook: 'Instagram / Meta',
-  };
   const oauth = (provider) => async () => {
     setNote('');
     onError('');
     const { error } = await sb.auth.signInWithOAuth({
-      provider,
+      provider: provider.key,
       options: { redirectTo: typeof window !== 'undefined' ? window.location.href : undefined },
     });
+    // Rarely reached — the call normally navigates away — but if the provider
+    // was switched off between page load and click, say so in English.
     if (error) {
-      onError(
-        `${PROVIDER_NAMES[provider] || provider} sign-in is not switched on yet. It needs an OAuth app and a client ID in Supabase Auth first.`
-      );
+      onError(`${provider.name} sign-in is not switched on in Supabase Auth yet.`);
     }
   };
+
+  const live = enabled ? OAUTH_PROVIDERS.filter((p) => enabled[p.key]) : [];
+  const pending = enabled ? OAUTH_PROVIDERS.filter((p) => !enabled[p.key]) : [];
 
   return (
     <main style={{ maxWidth: 420, margin: '0 auto', padding: '110px 24px 0' }}>
@@ -93,16 +125,21 @@ function Login({ onError, error }) {
         <button style={btnGhost} onClick={magicLink} disabled={busy}>
           Email me a magic link
         </button>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-          <button style={btnGhost} onClick={oauth('google')}>Google</button>
-          <button style={btnGhost} onClick={oauth('azure')}>Microsoft</button>
-          {/* Supabase calls LinkedIn's current provider linkedin_oidc; plain
-              'linkedin' is the retired one and errors on newer projects. */}
-          <button style={btnGhost} onClick={oauth('linkedin_oidc')}>LinkedIn</button>
-          {/* Instagram has no Supabase provider of its own — Instagram Login now
-              runs through Meta, so this goes via the Facebook provider. */}
-          <button style={btnGhost} onClick={oauth('facebook')}>Instagram / Meta</button>
-        </div>
+        {live.length > 0 && (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            {live.map((p) => (
+              <button key={p.key} style={btnGhost} onClick={oauth(p)}>
+                {p.name}
+              </button>
+            ))}
+          </div>
+        )}
+        {pending.length > 0 && (
+          <div style={{ fontSize: 11, lineHeight: 1.7, color: '#B4B0A6', marginTop: 2 }}>
+            {pending.map((p) => p.name).join(', ')} sign-in appear{pending.length === 1 ? 's' : ''} here
+            once switched on in Supabase Auth.
+          </div>
+        )}
       </div>
       {note && <div style={{ fontSize: 13, color: '#5F7355', marginTop: 18 }}>{note}</div>}
       {error && <div style={{ fontSize: 13, color: '#B3402A', marginTop: 18 }}>{error}</div>}
