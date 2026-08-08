@@ -1,114 +1,90 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { proj, countrySlug } from '@/lib/format';
+import { Map as MlMap, Marker, Popup, LngLatBounds, NavigationControl } from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
+import { countrySlug } from '@/lib/format';
 
-export default function WorldMap({ cities, aspect = '2.2/1', dotSize = 24, big = false }) {
-  const [hover, setHover] = useState(null);
+// Public frontend key (MapTiler keys are client-side by design; restrict by
+// HTTP origin in MapTiler Cloud -> API keys for extra safety).
+const MAPTILER_KEY = process.env.NEXT_PUBLIC_MAPTILER_KEY || 'Zarnd4HdiakX7HdqsByF';
+// "backdrop" — MapTiler's muted, near-monochrome cartography; sits well in the
+// store's cream/editorial design. Free plan, attribution kept (required).
+const STYLE = `https://api.maptiler.com/maps/backdrop/style.json?key=${MAPTILER_KEY}`;
+
+export default function WorldMap({ cities, aspect = '2.2/1', big = false }) {
+  const el = useRef(null);
   const router = useRouter();
-  const hovered = hover ? cities.find((c) => c.city === hover) : null;
-  const hovPos = hovered ? proj(hovered.lat, hovered.lon) : null;
+  const citiesRef = useRef(cities);
+  citiesRef.current = cities;
 
-  const lines = [];
-  for (let i = 1; i < 14; i++)
-    lines.push(
-      <line key={'v' + i} x1={(i * 100) / 14} y1={0} x2={(i * 100) / 14} y2={100} stroke="#E4E2DB" strokeWidth="0.12" />
-    );
-  for (let j = 1; j < 8; j++)
-    lines.push(
-      <line key={'h' + j} x1={0} y1={(j * 100) / 8} x2={100} y2={(j * 100) / 8} stroke="#E4E2DB" strokeWidth="0.12" />
-    );
-  lines.push(
-    <line
-      key="eq"
-      x1={0}
-      y1={(65 / 110) * 100}
-      x2={100}
-      y2={(65 / 110) * 100}
-      stroke="#D6D2C8"
-      strokeWidth="0.25"
-      strokeDasharray="1 1"
-    />
-  );
+  useEffect(() => {
+    if (!el.current) return;
+    const map = new MlMap({
+      container: el.current,
+      style: STYLE,
+      center: [40, 28],
+      zoom: big ? 1.6 : 1.1,
+      minZoom: 0.8,
+      maxZoom: 10,
+      attributionControl: { compact: true },
+      cooperativeGestures: !big,
+    });
+    map.addControl(new NavigationControl({ showCompass: false }), 'top-right');
+
+    // Fit to all cities
+    const pts = citiesRef.current.filter((c) => c.lat != null && c.lon != null);
+    if (pts.length > 1) {
+      const bounds = new LngLatBounds();
+      pts.forEach((c) => bounds.extend([c.lon, c.lat]));
+      map.fitBounds(bounds, { padding: big ? 70 : 50, duration: 0 });
+    }
+
+    const markers = pts.map((c) => {
+      const dot = document.createElement('div');
+      dot.style.cssText =
+        'width:12px;height:12px;border-radius:50%;background:#111111;border:2px solid #FFFDF4;box-shadow:0 1px 6px rgba(17,17,17,0.35);cursor:pointer;transition:transform .25s;';
+      dot.onmouseenter = () => (dot.style.transform = 'scale(1.7)');
+      dot.onmouseleave = () => (dot.style.transform = 'scale(1)');
+      dot.onclick = () => router.push(`/country/${countrySlug(c.country)}`);
+
+      const popup = new Popup({
+        offset: 14,
+        closeButton: false,
+        closeOnClick: false,
+        className: 'nomad-popup',
+      }).setHTML(
+        `<div style="font-size:12px;letter-spacing:0.12em">${c.city}, ${c.country}</div>` +
+          `<div style="font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#8A8A85;margin-top:5px">${c.count} ${
+            c.count === 1 ? 'object discovered' : 'objects discovered'
+          }</div>` +
+          (big
+            ? `<div style="font-size:10px;letter-spacing:0.16em;text-transform:uppercase;margin-top:9px">Explore ${c.city} →</div>`
+            : '')
+      );
+      dot.addEventListener('mouseenter', () => popup.setLngLat([c.lon, c.lat]).addTo(map));
+      dot.addEventListener('mouseleave', () => popup.remove());
+
+      return new Marker({ element: dot, anchor: 'center' })
+        .setLngLat([c.lon, c.lat])
+        .addTo(map);
+    });
+
+    return () => {
+      markers.forEach((m) => m.remove());
+      map.remove();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [big]);
 
   return (
-    <div style={{ position: 'relative', width: '100%', aspectRatio: aspect }}>
-      <svg
-        viewBox="0 0 100 100"
-        preserveAspectRatio="none"
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
-      >
-        {lines}
-      </svg>
-      {cities.map((c) => {
-        const pos = proj(c.lat, c.lon);
-        return (
-          <div
-            key={c.city}
-            className="map-dot"
-            onMouseEnter={() => setHover(c.city)}
-            onMouseLeave={() => setHover(null)}
-            onClick={() => router.push(`/country/${countrySlug(c.country)}`)}
-            style={{
-              position: 'absolute',
-              left: pos.left,
-              top: pos.top,
-              width: dotSize,
-              height: dotSize,
-              margin: `-${dotSize / 2}px 0 0 -${dotSize / 2}px`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-            }}
-          >
-            <span />
-          </div>
-        );
-      })}
-      {hovered && (
-        <div
-          style={{
-            position: 'absolute',
-            left: hovPos.left,
-            top: hovPos.top,
-            transform: 'translate(-50%,-140%)',
-            background: '#111111',
-            color: '#FFFFFF',
-            padding: big ? '14px 18px' : '12px 16px',
-            pointerEvents: 'none',
-            whiteSpace: 'nowrap',
-            zIndex: 5,
-          }}
-        >
-          <div style={{ fontSize: big ? 13 : 12, letterSpacing: '0.12em' }}>
-            {hovered.city}, {hovered.country}
-          </div>
-          <div
-            style={{
-              fontSize: 10,
-              letterSpacing: '0.16em',
-              textTransform: 'uppercase',
-              color: '#8A8A85',
-              marginTop: 5,
-            }}
-          >
-            {hovered.count} {hovered.count === 1 ? 'object discovered' : 'objects discovered'}
-          </div>
-          {big && (
-            <div
-              style={{
-                fontSize: 10,
-                letterSpacing: '0.16em',
-                textTransform: 'uppercase',
-                marginTop: 10,
-              }}
-            >
-              Explore {hovered.city} →
-            </div>
-          )}
-        </div>
-      )}
-    </div>
+    <>
+      <style>{`
+        .nomad-popup .maplibregl-popup-content{background:#111111;color:#FFFFFF;padding:12px 16px;border-radius:0;font-family:var(--font-sans),sans-serif;box-shadow:0 10px 26px rgba(17,17,17,0.28)}
+        .nomad-popup .maplibregl-popup-tip{border-top-color:#111111;border-bottom-color:#111111}
+        .maplibregl-ctrl-group{border-radius:0!important;box-shadow:0 2px 10px rgba(17,17,17,0.12)!important}
+      `}</style>
+      <div ref={el} style={{ width: '100%', aspectRatio: aspect, background: '#EDEAE3' }} />
+    </>
   );
 }
