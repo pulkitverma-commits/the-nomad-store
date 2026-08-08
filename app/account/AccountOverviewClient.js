@@ -158,7 +158,9 @@ export default function AccountOverviewClient() {
               marginBottom: 54,
             }}
           >
-            {detail && <Figure n={objects} label="Objects collected" />}
+            {detail && (
+              <Figure n={objects} label={objects === 1 ? 'Object collected' : 'Objects collected'} />
+            )}
             {detail && <Figure n={countries} label={countries === 1 ? 'Country' : 'Countries'} />}
             <Figure n={orders.length} label={orders.length === 1 ? 'Order placed' : 'Orders placed'} />
           </div>
