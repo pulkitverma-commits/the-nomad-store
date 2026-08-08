@@ -47,7 +47,7 @@ export default async function GiftsPage() {
           <Link
             key={label}
             href="/shop"
-            className="hover-card"
+            className="hover-card gift-tier"
             style={{
               background: '#FFFFFF',
               padding: '44px 36px',

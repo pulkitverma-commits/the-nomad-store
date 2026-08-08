@@ -68,6 +68,7 @@ export default async function DropsPage() {
         {drops.map((d) => (
           <div
             key={d.drop_no}
+            className="drop-row"
             style={{
               display: 'grid',
               gridTemplateColumns: '120px 1.2fr 1fr auto',

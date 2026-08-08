@@ -30,13 +30,14 @@ export default function Countdown({ size = 44 }) {
     [pad(Math.floor(diff / 1e3) % 60), 'Seconds'],
   ];
   return (
-    <div style={{ display: 'flex', gap: size > 60 ? 56 : 44 }}>
+    <div className="countdown" style={{ display: 'flex', flexWrap: 'wrap', gap: size > 60 ? 56 : 44 }}>
       {parts.map(([v, l]) => (
         <div key={l}>
-          <div className="serif" style={{ fontSize: size, lineHeight: 1 }} suppressHydrationWarning>
+          <div className="serif countdown-num" style={{ fontSize: size, lineHeight: 1 }} suppressHydrationWarning>
             {now ? v : '00'}
           </div>
           <div
+            className="countdown-label"
             style={{
               fontSize: 9,
               letterSpacing: '0.24em',

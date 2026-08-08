@@ -185,3 +185,49 @@ input {
     font-size: 13vw !important;
   }
 }
+
+/* Phones. Anything that still assumes two columns of editorial type collapses
+   to one here, and the drop countdown shrinks rather than pushing the page
+   wider than the viewport. */
+@media (max-width: 640px) {
+  .grid-3 {
+    grid-template-columns: 1fr !important;
+  }
+  .gift-tier {
+    padding: 34px 26px !important;
+    min-height: 0 !important;
+  }
+  .gift-tier .serif {
+    font-size: 26px !important;
+  }
+  .countdown {
+    gap: 18px !important;
+  }
+  .countdown-num {
+    font-size: clamp(28px, 11vw, 46px) !important;
+  }
+  .countdown-label {
+    font-size: 8px !important;
+    letter-spacing: 0.14em !important;
+  }
+  .drop-row {
+    grid-template-columns: 1fr auto !important;
+    gap: 6px 16px !important;
+    align-items: baseline !important;
+  }
+  .drop-row > :nth-child(1) {
+    order: 1;
+  }
+  .drop-row > :nth-child(4) {
+    order: 2;
+    text-align: right;
+  }
+  .drop-row > :nth-child(2) {
+    order: 3;
+    grid-column: 1 / -1;
+  }
+  .drop-row > :nth-child(3) {
+    order: 4;
+    grid-column: 1 / -1;
+  }
+}
