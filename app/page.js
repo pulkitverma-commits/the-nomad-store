@@ -7,6 +7,7 @@ import Countdown from '@/components/Countdown';
 import WorldMap from '@/components/WorldMap';
 import NotifyButton from '@/components/NotifyButton';
 import HeroPostcards from '@/components/HeroPostcards';
+import Voices from '@/components/Voices';
 
 export const revalidate = 60;
 
@@ -617,6 +618,9 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      {/* VOICES — the last thing read before the footer. */}
+      <Voices />
     </main>
   );
 }
