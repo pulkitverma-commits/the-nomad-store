@@ -1,5 +1,6 @@
 import { Instrument_Sans, Cormorant_Garamond } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import './globals.css';
 import { UiProvider } from '@/components/Ui';
 import Header from '@/components/Header';
@@ -78,6 +79,7 @@ export default async function RootLayout({ children }) {
           <SearchOverlay products={searchProducts} />
         </UiProvider>
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
