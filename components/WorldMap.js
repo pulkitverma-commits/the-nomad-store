@@ -41,12 +41,17 @@ export default function WorldMap({ cities, aspect = '2.2/1', big = false }) {
     }
 
     const markers = pts.map((c) => {
+      // Outer element is positioned by MapLibre via CSS transform — never touch
+      // its transform. The visual dot lives inside and handles hover scaling.
+      const holder = document.createElement('div');
+      holder.style.cssText = 'width:16px;height:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;';
       const dot = document.createElement('div');
       dot.style.cssText =
-        'width:12px;height:12px;border-radius:50%;background:#111111;border:2px solid #FFFDF4;box-shadow:0 1px 6px rgba(17,17,17,0.35);cursor:pointer;transition:transform .25s;';
-      dot.onmouseenter = () => (dot.style.transform = 'scale(1.7)');
-      dot.onmouseleave = () => (dot.style.transform = 'scale(1)');
-      dot.onclick = () => router.push(`/country/${countrySlug(c.country)}`);
+        'width:12px;height:12px;border-radius:50%;background:#111111;border:2px solid #FFFDF4;box-shadow:0 1px 6px rgba(17,17,17,0.35);transition:transform .25s;';
+      holder.appendChild(dot);
+      holder.onmouseenter = () => (dot.style.transform = 'scale(1.7)');
+      holder.onmouseleave = () => (dot.style.transform = 'scale(1)');
+      holder.onclick = () => router.push(`/country/${countrySlug(c.country)}`);
 
       const popup = new Popup({
         offset: 14,
@@ -62,10 +67,10 @@ export default function WorldMap({ cities, aspect = '2.2/1', big = false }) {
             ? `<div style="font-size:10px;letter-spacing:0.16em;text-transform:uppercase;margin-top:9px">Explore ${c.city} →</div>`
             : '')
       );
-      dot.addEventListener('mouseenter', () => popup.setLngLat([c.lon, c.lat]).addTo(map));
-      dot.addEventListener('mouseleave', () => popup.remove());
+      holder.addEventListener('mouseenter', () => popup.setLngLat([c.lon, c.lat]).addTo(map));
+      holder.addEventListener('mouseleave', () => popup.remove());
 
-      return new Marker({ element: dot, anchor: 'center' })
+      return new Marker({ element: holder, anchor: 'center' })
         .setLngLat([c.lon, c.lat])
         .addTo(map);
     });
