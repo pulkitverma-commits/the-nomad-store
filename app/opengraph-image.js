@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og';
 
-export const alt = 'The Nomad — Objects Worth Bringing Home';
+export const alt = 'The Nomad — Collectibles Worth Bringing Home';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -142,7 +142,7 @@ export default async function Image() {
               letterSpacing: serif ? '-0.01em' : '-0.025em',
             }}
           >
-            <div style={{ display: 'flex' }}>Objects Worth</div>
+            <div style={{ display: 'flex' }}>Collectibles Worth</div>
             <div style={{ display: 'flex' }}>Bringing Home</div>
           </div>
         </div>

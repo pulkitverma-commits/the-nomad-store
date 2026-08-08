@@ -41,7 +41,7 @@ export const metadata = {
     'japanese homeware',
   ],
   openGraph: {
-    title: 'The Nomad — Objects Worth Bringing Home',
+    title: 'The Nomad — Collectibles Worth Bringing Home',
     description:
       'A collection of remarkable handcrafted objects discovered across cities, cultures and corners of the world — brought home to India.',
     type: 'website',
@@ -51,7 +51,7 @@ export const metadata = {
   // conventions, so only the card shape and its words are set here.
   twitter: {
     card: 'summary_large_image',
-    title: 'The Nomad — Objects Worth Bringing Home',
+    title: 'The Nomad — Collectibles Worth Bringing Home',
     description:
       'A collection of remarkable handcrafted objects discovered across cities, cultures and corners of the world — brought home to India.',
   },

@@ -1,4 +1,4 @@
-# The Nomad — Objects Worth Bringing Home
+# The Nomad — Collectibles Worth Bringing Home
 
 An editorial e-commerce storefront for travel-curated artisan objects, built from a design
 prototype. Live at https://the-nomad-store.vercel.app

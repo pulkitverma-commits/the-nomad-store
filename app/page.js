@@ -92,9 +92,20 @@ export default async function Home() {
           </div>
           <h1
             className="serif"
-            style={{ fontWeight: 400, fontSize: 96, lineHeight: 0.98, letterSpacing: '-0.01em', margin: '0 0 26px' }}
+            /* "Collectibles" is a 12-character word and a word cannot wrap.
+               At a fixed 96px it is wider than a 390px phone and would push the
+               whole page sideways — the same overflow class of bug fixed
+               earlier. The clamp keeps the desktop size and lets the word
+               shrink on narrow screens. */
+            style={{
+              fontWeight: 400,
+              fontSize: 'clamp(40px, 10.5vw, 96px)',
+              lineHeight: 0.98,
+              letterSpacing: '-0.01em',
+              margin: '0 0 26px',
+            }}
           >
-            Objects Worth
+            Collectibles Worth
             <br />
             Bringing Home
           </h1>

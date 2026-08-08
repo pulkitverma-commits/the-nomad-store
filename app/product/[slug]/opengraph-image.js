@@ -135,7 +135,7 @@ export default async function Image({ params }) {
               letterSpacing: '-0.01em',
             }}
           >
-            Objects Worth Bringing Home
+            Collectibles Worth Bringing Home
           </div>
           <div
             style={{

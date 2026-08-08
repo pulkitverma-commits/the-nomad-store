@@ -29,7 +29,7 @@ export default function Footer() {
             The Nomad
           </div>
           <div className="serif" style={{ fontStyle: 'italic', fontSize: 20, color: '#6B6B68' }}>
-            Objects worth bringing home.
+            Collectibles worth bringing home.
           </div>
         </div>
         <div>
