@@ -25,7 +25,13 @@ function Login({ onError, error }) {
     setBusy(true);
     const { error } = await sb.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: typeof window !== 'undefined' ? window.location.href : undefined },
+      options: {
+        emailRedirectTo: typeof window !== 'undefined' ? window.location.href : undefined,
+        // Without this, anyone could type any address on this page and have
+        // Supabase mint them an account. Magic links are for staff who already
+        // have one; they are not a signup route.
+        shouldCreateUser: false,
+      },
     });
     setBusy(false);
     if (error) onError(error.message);
