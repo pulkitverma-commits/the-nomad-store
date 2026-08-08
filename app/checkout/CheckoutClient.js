@@ -51,7 +51,9 @@ export default function CheckoutClient() {
   const subtotal = bag.reduce((t, b) => t + b.price * b.qty, 0);
   const giftFee = gift ? 250 : 0;
   const codFee = pay === 'Cash on delivery' ? 50 : 0;
-  const total = subtotal + giftFee + codFee;
+  // Matches the published Shipping policy: free over Rs 2,500, Rs 150 below it.
+  const shipFee = subtotal >= 2500 || subtotal === 0 ? 0 : 150;
+  const total = subtotal + giftFee + codFee + shipFee;
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
 
   const placeOrder = async () => {
@@ -86,7 +88,11 @@ export default function CheckoutClient() {
         );
       } catch (e) {}
       clearBag();
-      router.push(`/order/${data.order_id}`);
+      router.push(
+        data.lookup_token
+          ? `/order/${data.order_id}?t=${data.lookup_token}`
+          : `/order/${data.order_id}`
+      );
     } catch (e) {
       setStatus('idle');
       setError(e.message);
@@ -263,7 +269,7 @@ export default function CheckoutClient() {
               }}
             >
               <span>Shipping</span>
-              <span>{subtotal >= 2500 ? 'Free' : 'Free over ₹2,500'}</span>
+              <span>{shipFee === 0 ? 'Free' : inr(shipFee)}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '20px 0 26px', fontSize: 17 }}>
               <span>Total</span>

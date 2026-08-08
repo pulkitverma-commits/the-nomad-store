@@ -1,49 +1,9 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
 import { supabaseBrowser } from '@/lib/supabaseBrowser';
-import { inr, productImg, cld } from '@/lib/format';
-
-const label = {
-  fontSize: 10,
-  letterSpacing: '0.26em',
-  textTransform: 'uppercase',
-  color: '#6B6B68',
-};
-const th = {
-  ...label,
-  textAlign: 'left',
-  padding: '12px 10px',
-  borderBottom: '1px solid #111111',
-};
-const td = { padding: '12px 10px', borderBottom: '1px solid #F2F1ED', fontSize: 13, verticalAlign: 'middle' };
-const inputStyle = {
-  border: '1px solid #E8E8E5',
-  padding: '10px 12px',
-  fontSize: 13,
-  width: '100%',
-  outline: 'none',
-  background: '#FFFFFF',
-};
-const btn = {
-  cursor: 'pointer',
-  background: '#111111',
-  color: '#FFFDF4',
-  border: 'none',
-  fontSize: 11,
-  letterSpacing: '0.16em',
-  textTransform: 'uppercase',
-  padding: '12px 22px',
-};
-const btnGhost = {
-  cursor: 'pointer',
-  background: 'transparent',
-  border: '1px solid #E8E8E5',
-  fontSize: 11,
-  letterSpacing: '0.14em',
-  textTransform: 'uppercase',
-  padding: '11px 18px',
-  color: '#4A4A47',
-};
+import { inr, productImg } from '@/lib/format';
+import { label, th, td, inputStyle, btn, btnGhost, linkAction, InlineConfirm } from './ui';
+import { Journal, Drops, ComingSoon } from './Collections';
 
 /* ─────────────── LOGIN ─────────────── */
 function Login({ onError, error }) {
@@ -288,6 +248,7 @@ function Products() {
   const [rows, setRows] = useState([]);
   const [editing, setEditing] = useState(null);
   const [creating, setCreating] = useState(false);
+  const [err, setErr] = useState('');
   const load = useCallback(async () => {
     const { data } = await sb.from('products').select('*').order('id');
     setRows(data || []);
@@ -301,12 +262,27 @@ function Products() {
     load();
   };
 
+  const remove = async (id) => {
+    setErr('');
+    const { error } = await sb.from('products').delete().eq('id', id);
+    // An object that has already been ordered is referenced by order_items and
+    // cannot be deleted — say so rather than failing silently.
+    if (error)
+      setErr(
+        /foreign key|violates/i.test(error.message)
+          ? 'This object appears on an order, so it cannot be deleted. Set its stock to 0 instead.'
+          : error.message
+      );
+    load();
+  };
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 22 }}>
         <div style={label}>{rows.length} objects</div>
         <button style={btn} onClick={() => setCreating(true)}>+ New object</button>
       </div>
+      {err && <div style={{ fontSize: 13, color: '#B3402A', marginBottom: 16 }}>{err}</div>}
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
           <tr>
@@ -347,13 +323,11 @@ function Products() {
                   onBlur={(e) => Number(e.target.value) !== p.stock && quickSet(p.id, { stock: Number(e.target.value) })}
                 />
               </td>
-              <td style={{ ...td, width: 80, textAlign: 'right' }}>
-                <span
-                  onClick={() => setEditing(p)}
-                  style={{ cursor: 'pointer', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', borderBottom: '1px solid #111111', paddingBottom: 2 }}
-                >
+              <td style={{ ...td, textAlign: 'right', whiteSpace: 'nowrap' }}>
+                <span onClick={() => setEditing(p)} style={{ ...linkAction, marginRight: 18 }}>
                   Edit
                 </span>
+                <InlineConfirm onConfirm={() => remove(p.id)} question={`Delete ${p.name}?`} />
               </td>
             </tr>
           ))}
@@ -374,15 +348,155 @@ function Products() {
 }
 
 /* ─────────────── ORDERS ─────────────── */
-function Orders() {
+
+const ORDER_FLOW = ['confirmed', 'packed', 'shipped', 'delivered'];
+const STATUS_TINT = {
+  confirmed: '#6B6B68',
+  packed: '#8A7B2F',
+  shipped: '#3F5F7A',
+  delivered: '#5F7355',
+};
+
+function StatusControl({ order, token, onDone }) {
+  const [open, setOpen] = useState(false);
+  const [status, setStatus] = useState(order.status || 'confirmed');
+  const [courier, setCourier] = useState(order.courier || '');
+  const [tracking, setTracking] = useState(order.tracking_number || '');
+  const [note, setNote] = useState(order.status_note || '');
+  const [notify, setNotify] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState('');
+  const [err, setErr] = useState('');
+
+  const save = async () => {
+    setBusy(true);
+    setErr('');
+    setMsg('');
+    try {
+      const res = await fetch('/api/admin/order-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          order_id: order.id,
+          status,
+          courier,
+          tracking_number: tracking,
+          status_note: note,
+          notify,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Could not update.');
+      setMsg(
+        data.mailed === 'sent'
+          ? `Marked ${data.status}. Written to ${order.email}.`
+          : `Marked ${data.status}. No email ${data.mailed === 'failed' ? '(the send failed)' : 'sent'}.`
+      );
+      onDone();
+    } catch (e) {
+      setErr(e.message);
+    }
+    setBusy(false);
+  };
+
+  return (
+    <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid #F2F1ED' }}>
+      <div style={{ display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap' }}>
+        <span
+          style={{
+            fontSize: 10,
+            letterSpacing: '0.2em',
+            textTransform: 'uppercase',
+            color: '#FFFDF4',
+            background: STATUS_TINT[order.status] || '#6B6B68',
+            padding: '6px 12px',
+          }}
+        >
+          {order.status || 'confirmed'}
+        </span>
+        {order.tracking_number && (
+          <span style={{ fontSize: 12, color: '#6B6B68' }}>
+            {order.courier || 'Courier'} · {order.tracking_number}
+          </span>
+        )}
+        <span onClick={() => setOpen(!open)} style={{ ...linkAction, marginLeft: 'auto' }}>
+          {open ? 'Close' : 'Move it along'}
+        </span>
+      </div>
+
+      {open && (
+        <div style={{ marginTop: 18, background: '#FCF7E8', padding: 20 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8, marginBottom: 16 }}>
+            {ORDER_FLOW.map((s) => (
+              <span
+                key={s}
+                onClick={() => setStatus(s)}
+                style={{
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                  fontSize: 10,
+                  letterSpacing: '0.16em',
+                  textTransform: 'uppercase',
+                  padding: '11px 6px',
+                  border: `1px solid ${status === s ? '#111111' : '#E8E8E5'}`,
+                  background: status === s ? '#111111' : 'transparent',
+                  color: status === s ? '#FFFDF4' : '#6B6B68',
+                }}
+              >
+                {s}
+              </span>
+            ))}
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div>
+              <div style={{ ...label, fontSize: 9, marginBottom: 6 }}>Courier</div>
+              <input style={inputStyle} value={courier} onChange={(e) => setCourier(e.target.value)} placeholder="Blue Dart" />
+            </div>
+            <div>
+              <div style={{ ...label, fontSize: 9, marginBottom: 6 }}>Tracking number</div>
+              <input style={inputStyle} value={tracking} onChange={(e) => setTracking(e.target.value)} />
+            </div>
+            <div style={{ gridColumn: 'span 2' }}>
+              <div style={{ ...label, fontSize: 9, marginBottom: 6 }}>A line for the customer (optional)</div>
+              <input
+                style={inputStyle}
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="Packed with the wax seal you asked for."
+              />
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 16, alignItems: 'center', marginTop: 18, flexWrap: 'wrap' }}>
+            <label style={{ fontSize: 12, color: '#4A4A47', display: 'flex', gap: 8, alignItems: 'center', cursor: 'pointer' }}>
+              <input type="checkbox" checked={notify} onChange={(e) => setNotify(e.target.checked)} />
+              Write to {order.email}
+            </label>
+            <button style={{ ...btn, marginLeft: 'auto', opacity: busy ? 0.6 : 1 }} onClick={save} disabled={busy}>
+              {busy ? 'Saving…' : 'Update order'}
+            </button>
+          </div>
+          {msg && <div style={{ fontSize: 13, color: '#5F7355', marginTop: 14 }}>{msg}</div>}
+          {err && <div style={{ fontSize: 13, color: '#B3402A', marginTop: 14 }}>{err}</div>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Orders({ token }) {
   const sb = supabaseBrowser();
   const [rows, setRows] = useState(null);
-  useEffect(() => {
-    sb.from('orders')
+  const load = useCallback(async () => {
+    const { data } = await sb
+      .from('orders')
       .select('*, order_items(qty, price, products(name, object_no))')
-      .order('created_at', { ascending: false })
-      .then(({ data }) => setRows(data || []));
+      .order('created_at', { ascending: false });
+    setRows(data || []);
   }, [sb]);
+  useEffect(() => {
+    load();
+  }, [load]);
+
   if (!rows) return <div style={label}>Loading…</div>;
   if (rows.length === 0)
     return <div className="serif" style={{ fontSize: 24, color: '#6B6B68' }}>No orders yet.</div>;
@@ -396,6 +510,7 @@ function Orders() {
               <span style={{ fontSize: 12, color: '#6B6B68', marginLeft: 12 }}>{o.email} · {o.mobile}</span>
             </div>
             <div style={{ fontSize: 12, color: '#6B6B68' }}>
+              <span style={{ color: '#B4B0A6', marginRight: 12 }}>{String(o.id).slice(0, 8).toUpperCase()}</span>
               {new Date(o.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
             </div>
           </div>
@@ -418,6 +533,7 @@ function Orders() {
             </span>
             <strong>{inr(o.total)}</strong>
           </div>
+          <StatusControl order={o} token={token} onDone={load} />
         </div>
       ))}
     </div>
@@ -470,7 +586,10 @@ const MAIL_KINDS = [
   ['welcome', 'Newsletter welcome', 'Sent on first newsletter signup — features a live object from the collection'],
   ['drops', 'Drop list', 'Sent when someone joins the drop list — live countdown to the next drop'],
   ['notify', 'Notify me', 'Sent when someone watches an in-transit object'],
-  ['order', 'Order confirmation', 'Sent after checkout — an Object Passport for every item'],
+  ['order', 'Order confirmation', 'Sent after checkout — an Object Passport for every item, and a link to track it'],
+  ['shipped', 'On its way', 'Sent when an order is marked shipped — courier, tracking number, timeline'],
+  ['landed', 'It landed', 'Sent to everyone watching a Coming Soon object when it becomes a product'],
+  ['dropday', 'Drop day', 'Sent by the morning cron to the drop list when a drop opens'],
 ];
 
 function Emails() {
@@ -590,6 +709,7 @@ export default function AdminApp() {
   const [isAdmin, setIsAdmin] = useState(null);
   const [tab, setTab] = useState('products');
   const [error, setError] = useState('');
+  const token = session?.access_token || '';
 
   useEffect(() => {
     sb.auth.getSession().then(({ data }) => setSession(data.session ?? null));
@@ -619,6 +739,9 @@ export default function AdminApp() {
   const tabs = [
     ['products', 'Products'],
     ['orders', 'Orders'],
+    ['journal', 'Journal'],
+    ['drops', 'Drops'],
+    ['soon', 'Coming soon'],
     ['signups', 'Signups'],
     ['emails', 'Emails'],
   ];
@@ -639,7 +762,7 @@ export default function AdminApp() {
           </span>
         </div>
       </div>
-      <div style={{ display: 'flex', gap: 26, marginBottom: 36 }}>
+      <div style={{ display: 'flex', gap: 26, marginBottom: 36, flexWrap: 'wrap' }}>
         {tabs.map(([k, l]) => (
           <div
             key={k}
@@ -659,7 +782,10 @@ export default function AdminApp() {
         ))}
       </div>
       {tab === 'products' && <Products />}
-      {tab === 'orders' && <Orders />}
+      {tab === 'orders' && <Orders token={token} />}
+      {tab === 'journal' && <Journal />}
+      {tab === 'drops' && <Drops />}
+      {tab === 'soon' && <ComingSoon token={token} />}
       {tab === 'signups' && <Signups />}
       {tab === 'emails' && <Emails />}
       <div style={{ height: 80 }} />

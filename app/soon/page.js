@@ -1,4 +1,5 @@
 import { getComingSoon } from '@/lib/supabase';
+import { cld } from '@/lib/format';
 import NotifyButton from '@/components/NotifyButton';
 
 export const revalidate = 60;
@@ -38,7 +39,16 @@ export default async function SoonPage() {
             borderBottom: '1px solid #F2F1ED',
           }}
         >
-          <div style={{ aspectRatio: '1', background: '#F2F1ED' }} />
+          <div className="zoomable" style={{ aspectRatio: '1', background: '#F2F1ED' }}>
+            {(s.image_public_id || s.photo_id) && (
+              <img
+                src={cld(s.image_public_id || `nomad/${s.photo_id}`, 400)}
+                alt={`${s.name} — in transit from ${s.origin}`}
+                loading="lazy"
+                style={{ filter: 'grayscale(0.25)' }}
+              />
+            )}
+          </div>
           <div>
             <div style={{ fontSize: 10, letterSpacing: '0.24em', textTransform: 'uppercase', color: '#B4B0A6', marginBottom: 10 }}>
               {s.obj_no}

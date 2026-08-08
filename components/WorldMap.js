@@ -89,7 +89,16 @@ export default function WorldMap({ cities, aspect = '2.2/1', big = false }) {
         .nomad-popup .maplibregl-popup-tip{border-top-color:#111111;border-bottom-color:#111111}
         .maplibregl-ctrl-group{border-radius:0!important;box-shadow:0 2px 10px rgba(17,17,17,0.12)!important}
       `}</style>
-      <div ref={el} style={{ width: '100%', aspectRatio: aspect, background: '#EDEAE3' }} />
+      <div
+        ref={el}
+        style={{
+          width: '100%',
+          aspectRatio: aspect,
+          background: '#EDEAE3',
+          overflow: 'hidden',
+          position: 'relative',
+        }}
+      />
     </>
   );
 }

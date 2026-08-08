@@ -1,10 +1,9 @@
 'use client';
-import { useState } from 'react';
 import { useUi } from './Ui';
 
 export default function AddToBag({ product }) {
-  const { bag, addToBag } = useUi();
-  const [saved, setSaved] = useState(false);
+  const { bag, addToBag, isSaved, toggleSaved, loaded } = useUi();
+  const saved = loaded && isSaved(product.id);
   const inBag = bag.some((b) => b.id === product.id);
   const soldOut = product.stock <= 0;
   return (
@@ -39,7 +38,11 @@ export default function AddToBag({ product }) {
         {soldOut ? 'Sold out' : inBag ? 'Added to bag ✓' : 'Add to bag'}
       </div>
       <div
-        onClick={() => setSaved(!saved)}
+        onClick={() => toggleSaved(product.id)}
+        role="button"
+        aria-pressed={saved}
+        aria-label={saved ? `Remove ${product.name} from saved` : `Save ${product.name}`}
+        title={saved ? 'Remove from saved' : 'Save for later'}
         style={{
           cursor: 'pointer',
           border: saved ? '1px solid #111111' : '1px solid #E8E8E5',
@@ -48,6 +51,8 @@ export default function AddToBag({ product }) {
           letterSpacing: '0.16em',
           textTransform: 'uppercase',
           color: saved ? '#111111' : '#6B6B68',
+          whiteSpace: 'nowrap',
+          transition: 'border-color 0.2s, color 0.2s',
         }}
       >
         {saved ? '♥ Saved' : '♡ Save'}

@@ -53,10 +53,11 @@ export default function Footer() {
         <div>
           <div style={label}>Help</div>
           <div style={col}>
-            <span>Shipping</span>
-            <span>Returns</span>
-            <span>Contact</span>
-            <span>FAQs</span>
+            <Link href="/shipping">Shipping</Link>
+            <Link href="/returns">Returns</Link>
+            <Link href="/contact">Contact</Link>
+            <Link href="/faqs">FAQs</Link>
+            <Link href="/saved">Saved objects</Link>
           </div>
         </div>
         <div>
@@ -85,8 +86,8 @@ export default function Footer() {
         <div style={{ display: 'flex', gap: 26 }}>
           <span>Instagram</span>
           <span>Pinterest</span>
-          <span>Terms</span>
-          <span>Privacy</span>
+          <Link href="/terms" style={{ color: '#B4B0A6' }}>Terms</Link>
+          <Link href="/privacy" style={{ color: '#B4B0A6' }}>Privacy</Link>
         </div>
       </div>
     </footer>

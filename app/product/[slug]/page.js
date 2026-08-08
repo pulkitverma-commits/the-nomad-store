@@ -1,7 +1,15 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getProducts, getProduct } from '@/lib/supabase';
-import { inr, img, productImg, deg, stockLine, countrySlug } from '@/lib/format';
+import {
+  inr,
+  productImg,
+  productDetailImg,
+  mapTiles,
+  deg,
+  stockLine,
+  countrySlug,
+} from '@/lib/format';
 import AddToBag from '@/components/AddToBag';
 import ProductCard from '@/components/ProductCard';
 
@@ -30,6 +38,9 @@ export default async function ProductPage({ params }) {
     { k: 'Dimensions', v: '12 cm × 7 cm' },
     { k: 'Sourced', v: '2026 Nomad Collection' },
   ];
+  // 3x3 block of MapTiler raster tiles, offset so the workshop coordinate sits
+  // exactly in the middle of the square tile.
+  const map = mapTiles(p.lat, p.lon, 12);
   const passport = [
     { k: 'Origin', v: `${p.city}, ${p.country}` },
     { k: 'Coordinates', v: `${deg(p.lat, 'N', 'S')} / ${deg(p.lon, 'E', 'W')}` },
@@ -73,7 +84,17 @@ export default async function ProductPage({ params }) {
         <Link href="/shop" style={{ color: '#6B6B68' }}>Objects</Link> /{' '}
         <Link href={`/country/${countrySlug(p.country)}`} style={{ color: '#6B6B68' }}>{p.country}</Link> / {p.city}
       </div>
-      <section className="split" style={{ display: 'grid', gridTemplateColumns: '1.15fr 1fr', gap: 0, alignItems: 'start' }}>
+      <section
+        className="split"
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1.15fr 1fr',
+          gap: 0,
+          alignItems: 'start',
+          maxWidth: 1560,
+          margin: '0 auto',
+        }}
+      >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingLeft: 40 }}>
           <div style={{ aspectRatio: '1', background: p.tone, overflow: 'hidden' }}>
             <img
@@ -83,18 +104,110 @@ export default async function ProductPage({ params }) {
             />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            {/* Detail: a real Cloudinary content-aware crop of the same
+                negative, not a CSS zoom of the same framing. */}
             <div style={{ aspectRatio: '1', background: '#F2F1ED', overflow: 'hidden' }}>
               <img
-                src={productImg(p, 600)}
-                alt={`${p.name} — detail`}
+                src={productDetailImg(p, 600)}
+                alt={`${p.name} — detail${p.material ? `, ${p.material.toLowerCase()}` : ''}`}
                 loading="lazy"
-                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transform: 'scale(1.35)' }}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
               />
             </div>
-            <div style={{ aspectRatio: '1', background: '#EDEAE3', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontSize: 9, letterSpacing: '0.24em', textTransform: 'uppercase', color: '#B4B0A6' }}>
-                In place
-              </span>
+            {/* In place: where the object was found, drawn from MapTiler tiles. */}
+            <div
+              style={{
+                aspectRatio: '1',
+                background: '#EDEAE3',
+                position: 'relative',
+                overflow: 'hidden',
+              }}
+            >
+              <div
+                aria-hidden="true"
+                style={{
+                  position: 'absolute',
+                  left: '50%',
+                  top: '50%',
+                  width: map.size,
+                  height: map.size,
+                  marginLeft: -map.pointX,
+                  marginTop: -map.pointY,
+                }}
+              >
+                {map.tiles.map((t) => (
+                  <img
+                    key={t.key}
+                    src={t.url}
+                    alt=""
+                    loading="lazy"
+                    style={{
+                      position: 'absolute',
+                      left: t.left,
+                      top: t.top,
+                      width: 256,
+                      height: 256,
+                      display: 'block',
+                    }}
+                  />
+                ))}
+              </div>
+              {/* the pin, dead centre */}
+              <div
+                style={{
+                  position: 'absolute',
+                  left: '50%',
+                  top: '50%',
+                  width: 13,
+                  height: 13,
+                  marginLeft: -6.5,
+                  marginTop: -6.5,
+                  borderRadius: '50%',
+                  background: '#111111',
+                  border: '2px solid #FFFDF4',
+                  boxShadow: '0 1px 6px rgba(17,17,17,0.35)',
+                }}
+              />
+              <div
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  padding: '30px 16px 12px',
+                  background:
+                    'linear-gradient(to top, rgba(255,253,244,0.94), rgba(255,253,244,0))',
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 9,
+                    letterSpacing: '0.24em',
+                    textTransform: 'uppercase',
+                    color: '#6B6B68',
+                    marginBottom: 4,
+                  }}
+                >
+                  In place · {p.city}
+                </div>
+                <div style={{ fontSize: 11, color: '#4A4A47' }}>
+                  {deg(p.lat, 'N', 'S')} / {deg(p.lon, 'E', 'W')}
+                </div>
+              </div>
+              <div
+                style={{
+                  position: 'absolute',
+                  right: 5,
+                  top: 5,
+                  fontSize: 8,
+                  letterSpacing: '0.04em',
+                  color: 'rgba(17,17,17,0.45)',
+                  background: 'rgba(255,253,244,0.7)',
+                  padding: '2px 5px',
+                }}
+              >
+                © MapTiler © OpenStreetMap
+              </div>
             </div>
           </div>
         </div>

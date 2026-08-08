@@ -30,7 +30,13 @@ export async function POST(req) {
     };
 
     const sb = supabase();
-    const { data, error } = await sb.rpc('place_order', { p_customer: payload, p_items: clean });
+    // place_order_with_token wraps place_order (same behaviour, same stock
+    // locking) and additionally returns the order's lookup_token, which the
+    // confirmation email needs for its "track this order" link.
+    const { data, error } = await sb.rpc('place_order_with_token', {
+      p_customer: payload,
+      p_items: clean,
+    });
     if (error) {
       const msg = /only (\d+) left/.test(error.message)
         ? 'One of the objects in your bag just sold out at that quantity. Please adjust your bag.'
@@ -51,10 +57,12 @@ export async function POST(req) {
 
       const order = {
         id: data.order_id,
+        lookup_token: data.lookup_token,
         ...payload,
         subtotal: lines.reduce((t, l) => t + l.price * l.qty, 0),
         gift_fee: payload.gift ? 250 : 0,
         cod_fee: payload.payment_method === 'Cash on delivery' ? 50 : 0,
+        ship_fee: lines.reduce((t, l) => t + l.price * l.qty, 0) >= 2500 ? 0 : 150,
         total: data.total,
       };
 
@@ -67,11 +75,14 @@ export async function POST(req) {
         text: mail.text,
         tags: ['nomad', 'order-confirmation'],
         metadata: { order_id: String(data.order_id) },
+        kind: 'order',
+        // A receipt for something already paid for — it is not marketing and
+        // must not be withheld from someone who left the newsletter.
+        transactional: true,
       });
-      await logMail(payload.email, 'order', mail.subject, 'sent');
     } catch (e) {
       console.error('[checkout] confirmation mail failed:', e.message);
-      await logMail(payload.email, 'order', '', 'failed', e.message);
+      if (!e.logged) await logMail(payload.email, 'order', '', 'failed', e.message);
     }
 
     return NextResponse.json(data);

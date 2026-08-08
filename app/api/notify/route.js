@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { sendMail, notifyEmail } from '@/lib/mail';
+import { sendMail, notifyEmail, subscriberToken } from '@/lib/mail';
 import { logMail } from '@/lib/maillog';
 
 export async function POST(req) {
@@ -22,7 +22,8 @@ export async function POST(req) {
 
     if (!already) {
       try {
-        const mail = await notifyEmail(clean, item);
+        const token = await subscriberToken(clean);
+        const mail = await notifyEmail(clean, item, token);
         await sendMail({
           to: clean,
           subject: mail.subject,
@@ -30,11 +31,15 @@ export async function POST(req) {
           text: mail.text,
           tags: ['nomad', 'notify-me'],
           metadata: { item },
+          kind: 'notify',
+          // A one-off alert the visitor asked for about one object: not a
+          // mailing list (so no List-Unsubscribe), but still suppressed for
+          // anyone who has opted out.
+          unsubToken: token,
         });
-        await logMail(clean, 'notify', mail.subject, 'sent');
       } catch (e) {
         console.error('[notify] mail failed:', e.message);
-        await logMail(clean, 'notify', '', 'failed', e.message);
+        if (!e.logged) await logMail(clean, 'notify', '', 'failed', e.message);
       }
     }
 
