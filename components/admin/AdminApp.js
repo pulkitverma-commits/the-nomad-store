@@ -46,12 +46,24 @@ function Login({ onError, error }) {
       );
     } else setNote('Magic link sent — check your inbox.');
   };
+  const PROVIDER_NAMES = {
+    google: 'Google',
+    azure: 'Microsoft',
+    linkedin_oidc: 'LinkedIn',
+    facebook: 'Instagram / Meta',
+  };
   const oauth = (provider) => async () => {
+    setNote('');
+    onError('');
     const { error } = await sb.auth.signInWithOAuth({
       provider,
       options: { redirectTo: typeof window !== 'undefined' ? window.location.href : undefined },
     });
-    if (error) onError(`${provider} sign-in is not enabled yet in Supabase Auth settings.`);
+    if (error) {
+      onError(
+        `${PROVIDER_NAMES[provider] || provider} sign-in is not switched on yet. It needs an OAuth app and a client ID in Supabase Auth first.`
+      );
+    }
   };
 
   return (
@@ -84,6 +96,12 @@ function Login({ onError, error }) {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
           <button style={btnGhost} onClick={oauth('google')}>Google</button>
           <button style={btnGhost} onClick={oauth('azure')}>Microsoft</button>
+          {/* Supabase calls LinkedIn's current provider linkedin_oidc; plain
+              'linkedin' is the retired one and errors on newer projects. */}
+          <button style={btnGhost} onClick={oauth('linkedin_oidc')}>LinkedIn</button>
+          {/* Instagram has no Supabase provider of its own — Instagram Login now
+              runs through Meta, so this goes via the Facebook provider. */}
+          <button style={btnGhost} onClick={oauth('facebook')}>Instagram / Meta</button>
         </div>
       </div>
       {note && <div style={{ fontSize: 13, color: '#5F7355', marginTop: 18 }}>{note}</div>}
