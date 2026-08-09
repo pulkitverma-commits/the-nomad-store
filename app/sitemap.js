@@ -18,6 +18,11 @@ export default async function sitemap() {
     { url: `${BASE}/drops`, priority: 0.7 },
     { url: `${BASE}/journal`, priority: 0.7 },
     { url: `${BASE}/world`, priority: 0.6 },
+    // About and Voices carry the shop's story and its social proof — the two
+    // things a first-time visitor searches for by name. They were added after
+    // this list was first written and were silently missing from it.
+    { url: `${BASE}/about`, priority: 0.6 },
+    { url: `${BASE}/voices`, priority: 0.6 },
     { url: `${BASE}/soon`, priority: 0.5 },
     { url: `${BASE}/shipping`, priority: 0.4 },
     { url: `${BASE}/returns`, priority: 0.4 },
