@@ -25,6 +25,12 @@ const serif = Cormorant_Garamond({
 
 export const metadata = {
   metadataBase: new URL(SITE_URL),
+  // Google Search Console ownership for https://www.thenomad.buzz.
+  // Google re-checks this periodically, so it has to stay put — removing it
+  // silently un-verifies the property and the sitemap stops being read.
+  verification: {
+    google: 'OqYi32Mflf-FGSEliQ_wt53kHNitDZv45x1gK9mkXMI',
+  },
   title: {
     default: 'The Nomad — Handcrafted Home Decor & Travel Gifts from 18 Countries',
     template: '%s · The Nomad',
