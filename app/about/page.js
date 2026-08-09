@@ -21,6 +21,13 @@ const MUTED = '#6B6B68';
 const FAINT = '#B4B0A6';
 const LINE = '#E8E8E5';
 
+// The "Where we are" panel used to be near-black. On the sage it now carries,
+// the old #8A8A85 / #C9C9C4 / #E8E8E5 text colours score 2.98:1, 1.5:1 and
+// 1.2:1 against it — all far under AA — so each is replaced, not just nudged.
+const PANEL = '#E8F0E6';
+const PANEL_MUTED = '#5A5A57';
+const PANEL_LINE = '#CBD8C7';
+
 // The accent stripe over each principle, from the design's own swatch list.
 const POPS = ['#F6E3A1', '#F0D3BE', '#D8E2CE', '#CFDDE8', '#EAD6DF', '#E4DCC3'];
 
@@ -284,8 +291,8 @@ export default async function AboutPage() {
         <div
           className="split"
           style={{
-            background: INK,
-            color: '#FFFFFF',
+            background: PANEL,
+            color: INK,
             padding: 'clamp(40px, 6vw, 80px) clamp(26px, 4.5vw, 64px)',
             display: 'grid',
             gridTemplateColumns: '1fr 1fr',
@@ -294,14 +301,14 @@ export default async function AboutPage() {
           }}
         >
           <div>
-            <div style={{ ...kickerStyle, color: '#8A8A85', marginBottom: 24 }}>{a.where_kicker}</div>
+            <div style={{ ...kickerStyle, color: PANEL_MUTED, marginBottom: 24 }}>{a.where_kicker}</div>
             <div
               className="serif"
               style={{ fontSize: 'clamp(28px, 4.2vw, 44px)', lineHeight: 1.3, marginBottom: 26 }}
             >
               {a.where_headline}
             </div>
-            <div style={{ fontSize: 15, lineHeight: 1.8, color: '#C9C9C4', maxWidth: '44ch' }}>
+            <div style={{ fontSize: 15, lineHeight: 1.8, color: '#4A4A47', maxWidth: '44ch' }}>
               {a.where_body}
             </div>
           </div>
@@ -315,10 +322,10 @@ export default async function AboutPage() {
                     justifyContent: 'space-between',
                     gap: 24,
                     padding: '20px 0',
-                    borderBottom: '1px solid #333330',
+                    borderBottom: `1px solid ${PANEL_LINE}`,
                   }}
                 >
-                  <div style={{ fontSize: 15, lineHeight: 1.6, color: '#E8E8E5', maxWidth: '38ch' }}>
+                  <div style={{ fontSize: 15, lineHeight: 1.6, color: '#4A4A47', maxWidth: '38ch' }}>
                     {t.text}
                   </div>
                   <div
@@ -326,7 +333,7 @@ export default async function AboutPage() {
                       fontSize: 10,
                       letterSpacing: '0.18em',
                       textTransform: 'uppercase',
-                      color: '#8A8A85',
+                      color: PANEL_MUTED,
                       whiteSpace: 'nowrap',
                     }}
                   >

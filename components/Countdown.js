@@ -12,7 +12,11 @@ function nextDropTarget() {
   return t.getTime();
 }
 
-export default function Countdown({ size = 44 }) {
+// `labelColor` exists because the DAYS/HOURS labels are 9px uppercase with wide
+// letter-spacing — the first thing to become unreadable when the panel behind
+// them changes. The old value (#8A8A85) was tuned for a near-black panel and
+// scores 2.98:1 on the sage one, well under AA, so the caller says now.
+export default function Countdown({ size = 44, labelColor = '#5A5A57' }) {
   const [now, setNow] = useState(null);
   const [target, setTarget] = useState(null);
   useEffect(() => {
@@ -42,7 +46,7 @@ export default function Countdown({ size = 44 }) {
               fontSize: 9,
               letterSpacing: '0.24em',
               textTransform: 'uppercase',
-              color: '#8A8A85',
+              color: labelColor,
               marginTop: 8,
             }}
           >

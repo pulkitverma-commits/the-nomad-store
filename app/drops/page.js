@@ -35,22 +35,22 @@ export default async function DropsPage() {
   const objectCount = drops.reduce((total, d) => total + objectsIn(d.note), 0);
   return (
     <main>
-      <section style={{ background: '#111111', color: '#FFFFFF', padding: '110px 40px' }}>
+      <section style={{ background: '#E8F0E6', color: '#111111', padding: '110px 40px' }}>
         <div style={{ maxWidth: 1560, margin: '0 auto' }}>
-          <div style={{ fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#8A8A85', marginBottom: 26 }}>
+          <div style={{ fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#5A5A57', marginBottom: 26 }}>
             Nomad Drops
           </div>
           <h1 className="serif" style={{ fontWeight: 300, fontSize: 96, lineHeight: 0.95, margin: '0 0 26px', maxWidth: '16ch' }}>
             We release what we find, all at once
           </h1>
-          <p style={{ fontSize: 15, lineHeight: 1.8, color: '#B4B0A6', maxWidth: '56ch', margin: '0 0 60px' }}>
+          <p style={{ fontSize: 15, lineHeight: 1.8, color: '#4A4A47', maxWidth: '56ch', margin: '0 0 60px' }}>
             A drop is one trip, released in one moment. Nothing is restocked, nothing is discounted.
             Join the list and we will write to you the morning it opens.
           </p>
           <div
             className="split"
             style={{
-              borderTop: '1px solid #333330',
+              borderTop: '1px solid #CBD8C7',
               paddingTop: 48,
               display: 'grid',
               gridTemplateColumns: '1fr auto',
@@ -59,13 +59,13 @@ export default async function DropsPage() {
             }}
           >
             <div>
-              <div style={{ fontSize: 11, letterSpacing: '0.24em', textTransform: 'uppercase', color: '#8A8A85', marginBottom: 20 }}>
+              <div style={{ fontSize: 11, letterSpacing: '0.24em', textTransform: 'uppercase', color: '#5A5A57', marginBottom: 20 }}>
                 Drop 006 · Tokyo · 28 objects
               </div>
               <Countdown size={76} />
             </div>
             <div style={{ minWidth: 'min(400px, 100%)' }}>
-              <SubscribeForm source="drops" dark cta="Join the list →" />
+              <SubscribeForm source="drops" cta="Join the list →" />
             </div>
           </div>
         </div>

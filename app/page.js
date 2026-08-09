@@ -411,8 +411,8 @@ export default async function Home() {
         <div className="grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40 }}>
           <div
             style={{
-              background: '#111111',
-              color: '#FFFFFF',
+              background: '#E8F0E6',
+              color: '#111111',
               padding: '64px 56px',
               display: 'flex',
               flexDirection: 'column',
@@ -421,13 +421,13 @@ export default async function Home() {
             }}
           >
             <div>
-              <div style={{ fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#8A8A85', marginBottom: 28 }}>
+              <div style={{ fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#5A5A57', marginBottom: 28 }}>
                 Nomad Drop 006
               </div>
               <h3 className="serif" style={{ fontWeight: 300, fontSize: 64, lineHeight: 1, margin: '0 0 18px' }}>
                 Tokyo
               </h3>
-              <p style={{ fontSize: 14, lineHeight: 1.7, color: '#B4B0A6', maxWidth: '38ch', margin: 0 }}>
+              <p style={{ fontSize: 14, lineHeight: 1.7, color: '#4A4A47', maxWidth: '38ch', margin: 0 }}>
                 Twenty-eight objects, collected over six days and released at once. When they are
                 gone, they are gone.
               </p>
@@ -440,8 +440,8 @@ export default async function Home() {
                 <Link
                   href="/drops"
                   style={{
-                    background: '#FFFFFF',
-                    color: '#111111',
+                    background: '#111111',
+                    color: '#FFFDF4',
                     fontSize: 11,
                     letterSpacing: '0.18em',
                     textTransform: 'uppercase',
@@ -450,7 +450,7 @@ export default async function Home() {
                 >
                   Join the list
                 </Link>
-                <div style={{ fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#8A8A85' }}>
+                <div style={{ fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#5A5A57' }}>
                   Sunday · 11:00 IST · 28 objects
                 </div>
               </div>
