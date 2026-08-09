@@ -1,11 +1,18 @@
 'use client';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useUi } from './Ui';
 import { useCustomerSession } from '@/lib/customerAuth';
+import { navTone } from '@/lib/navTone';
 
 export default function Header() {
   const { bag, setBagOpen, setSearchOpen, saved, loaded } = useUi();
   const { session, loading: authLoading } = useCustomerSession();
+  // The bar takes a different pale tone on each section of the shop. Derived
+  // from the path rather than passed down, so a new page picks up a colour
+  // without touching every layout.
+  const pathname = usePathname();
+  const tone = navTone(pathname);
   const count = bag.reduce((t, b) => t + b.qty, 0);
   // Only after localStorage has been read, so server HTML and first client
   // paint agree and the number does not flicker in.
@@ -16,13 +23,19 @@ export default function Header() {
           breakpoint: below 640px the Saved link collapses to just the heart. */}
       <style>
         {'@media (max-width:640px){.saved-word{display:none}}' +
-          '@media (max-width:560px){.account-link{display:none}}'}
+          '@media (max-width:560px){.account-link{display:none}}' +
+          '@media (prefers-reduced-motion:reduce){.nav-pill{transition:none!important}}'}
       </style>
       <div
+        className="nav-pill"
         style={{
           maxWidth: 1200,
           margin: '0 auto',
-          background: '#FFFDF4',
+          background: tone,
+          // Eased rather than instant: on a client-side route change the bar
+          // stays put while the page swaps, so a hard colour cut would read as
+          // a flicker. Respects prefers-reduced-motion via the rule below.
+          transition: 'background 420ms cubic-bezier(.2,.7,.2,1)',
           border: '1px solid rgba(17,17,17,0.08)',
           borderRadius: 999,
           boxShadow: '0 12px 32px rgba(17,17,17,0.10)',
