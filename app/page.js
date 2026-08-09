@@ -34,7 +34,10 @@ const sticker = (extra) => ({
 const HERO_STICKERS = [
   { id: 'parcelworks', w: 190, at: { left: '5.5%', top: '42%', transform: 'rotate(-9deg)' } },
   { id: 'marlow', w: 150, at: { left: '9%', top: '54%', transform: 'rotate(6deg)' } },
-  { id: 'bloomsends', w: 118, at: { left: '5%', bottom: '11%', transform: 'rotate(-12deg)' } },
+  // Raised 100px off its original 11%. Kept as a calc rather than folded into
+  // a new percentage so the offset stays a fixed 100px at every viewport —
+  // 11% of this section is ~140px, so a percentage would drift with height.
+  { id: 'bloomsends', w: 118, at: { left: '5%', bottom: 'calc(11% + 100px)', transform: 'rotate(-12deg)' } },
   { id: 'homestead', w: 180, at: { right: '5.5%', top: '40%', transform: 'rotate(7deg)' } },
   { id: 'fletch', w: 155, at: { right: '9%', top: '54%', transform: 'rotate(-5deg)' } },
   { id: 'trustedsupply', w: 175, at: { right: '5%', bottom: '12%', transform: 'rotate(4deg)' } },
