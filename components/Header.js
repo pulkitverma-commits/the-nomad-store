@@ -62,6 +62,7 @@ export default function Header() {
           <Link className="navlink" href="/drops">Drops</Link>
           <Link className="navlink" href="/journal">Journal</Link>
           <Link className="navlink" href="/world">World Map</Link>
+          <Link className="navlink" href="/voices">Voices</Link>
         </nav>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto' }}>
           <div

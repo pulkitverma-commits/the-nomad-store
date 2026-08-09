@@ -455,3 +455,263 @@ export function ComingSoon({ token }) {
     </div>
   );
 }
+
+/* ─────────────── VOICES ─────────────── */
+
+const EMPTY_VOICE = {
+  quote: '',
+  name: '',
+  city: '',
+  country: '',
+  object: '',
+  source_email: '',
+  featured: false,
+  published: false,
+  sort_order: 0,
+};
+
+function Toggle({ on, onChange, children, note }) {
+  return (
+    <div
+      onClick={() => onChange(!on)}
+      style={{ cursor: 'pointer', display: 'flex', gap: 12, alignItems: 'flex-start', padding: '10px 0' }}
+    >
+      <div
+        style={{
+          width: 34,
+          height: 20,
+          borderRadius: 999,
+          background: on ? '#111111' : '#E8E8E5',
+          position: 'relative',
+          flexShrink: 0,
+          transition: 'background .15s',
+        }}
+      >
+        <div
+          style={{
+            position: 'absolute',
+            top: 3,
+            left: on ? 17 : 3,
+            width: 14,
+            height: 14,
+            borderRadius: 999,
+            background: '#FFFFFF',
+            transition: 'left .15s',
+          }}
+        />
+      </div>
+      <div>
+        <div style={{ fontSize: 13 }}>{children}</div>
+        {note && <div style={{ fontSize: 11, color: '#6B6B68', marginTop: 3, lineHeight: 1.5 }}>{note}</div>}
+      </div>
+    </div>
+  );
+}
+
+function VoiceEditor({ voice, onClose, onSaved }) {
+  const sb = supabaseBrowser();
+  const isNew = !voice?.id;
+  const [v, setV] = useState(voice || EMPTY_VOICE);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+  const set = (k) => (val) => setV((prev) => ({ ...prev, [k]: val }));
+
+  const save = async () => {
+    setErr('');
+    if (!v.quote.trim() || !v.name.trim()) return setErr('A quote and a name, at minimum.');
+    if (v.published && !v.source_email.trim()) {
+      // The one hard gate. A published letter has to be traceable to whoever
+      // sent it — that is what the Consumer Protection Act and the BIS review
+      // standard assume, and it is what lets us answer "can I see the original?"
+      return setErr('Publishing needs the sender’s email on record. Keep it unpublished until you have it.');
+    }
+    setBusy(true);
+    const row = { ...v };
+    delete row.id;
+    delete row.created_at;
+    const { error } = isNew
+      ? await sb.from('testimonials').insert(row)
+      : await sb.from('testimonials').update(row).eq('id', voice.id);
+    setBusy(false);
+    if (error) return setErr(error.message);
+    onSaved();
+    onClose();
+  };
+
+  return (
+    <Drawer title={isNew ? 'New letter' : v.name} onClose={onClose} width={620}>
+      <div style={{ ...label, fontSize: 9, marginBottom: 6 }}>
+        The letter · exactly as they wrote it ({v.quote.trim().length} characters)
+      </div>
+      <textarea
+        style={{ ...inputStyle, minHeight: 180, lineHeight: 1.7, resize: 'vertical' }}
+        value={v.quote}
+        onChange={(e) => set('quote')(e.target.value)}
+      />
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 18 }}>
+        <Field label="Name as shown" value={v.name} onChange={set('name')} />
+        <Field label="City" value={v.city} onChange={set('city')} />
+        <Field label="Object and date" value={v.object} onChange={set('object')} wide />
+        <Field label="Country (for the counted figures)" value={v.country} onChange={set('country')} />
+        <Field label="Sort order" value={v.sort_order} onChange={set('sort_order')} type="number" />
+        <Field label="Sender’s email · kept private, never shown" value={v.source_email} onChange={set('source_email')} wide />
+      </div>
+
+      <div style={{ marginTop: 22, paddingTop: 18, borderTop: '1px solid #E8E8E5' }}>
+        <Toggle
+          on={v.published}
+          onChange={set('published')}
+          note="Nothing appears on the shop until this is on. Needs the sender’s email and their permission."
+        >
+          Published
+        </Toggle>
+        <Toggle
+          on={v.featured}
+          onChange={set('featured')}
+          note="Runs large at the top of /voices and leads the home page."
+        >
+          Featured
+        </Toggle>
+      </div>
+
+      {err && <div style={{ fontSize: 13, color: '#B3402A', marginTop: 18, lineHeight: 1.6 }}>{err}</div>}
+      <div style={{ marginTop: 26 }}>
+        <button style={{ ...btn, width: '100%', padding: 15, opacity: busy ? 0.6 : 1 }} onClick={save} disabled={busy}>
+          {busy ? 'Saving…' : isNew ? 'Save letter' : 'Save changes'}
+        </button>
+      </div>
+    </Drawer>
+  );
+}
+
+export function Voices() {
+  const sb = supabaseBrowser();
+  const [rows, setRows] = useState([]);
+  const [editing, setEditing] = useState(null);
+  const [creating, setCreating] = useState(false);
+  const [err, setErr] = useState('');
+
+  const load = useCallback(async () => {
+    const { data, error } = await sb
+      .from('testimonials')
+      .select('*')
+      .order('sort_order')
+      .order('id');
+    if (error) setErr(error.message);
+    setRows(data || []);
+  }, [sb]);
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const remove = async (id) => {
+    const { error } = await sb.from('testimonials').delete().eq('id', id);
+    if (error) setErr(error.message);
+    load();
+  };
+
+  const togglePublished = async (r) => {
+    if (!r.published && !r.source_email) {
+      return setErr(`Cannot publish ${r.name} without the sender’s email on record. Open it and add one.`);
+    }
+    setErr('');
+    const { error } = await sb.from('testimonials').update({ published: !r.published }).eq('id', r.id);
+    if (error) setErr(error.message);
+    load();
+  };
+
+  const live = rows.filter((r) => r.published).length;
+
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 22 }}>
+        <div style={label}>
+          {rows.length} {rows.length === 1 ? 'letter' : 'letters'} · {live} live
+        </div>
+        <button style={btn} onClick={() => setCreating(true)}>+ New letter</button>
+      </div>
+
+      <div style={{ fontSize: 12, lineHeight: 1.7, color: '#6B6B68', marginBottom: 22, maxWidth: '70ch' }}>
+        Only published letters reach the shop. Publish one you actually received, from someone who
+        is happy to be quoted, and keep their email against it — a published review is expected to
+        trace back to a real buyer.
+      </div>
+
+      {err && <div style={{ fontSize: 13, color: '#B3402A', marginBottom: 16 }}>{err}</div>}
+      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <thead>
+          <tr>
+            <th style={th}>Letter</th>
+            <th style={th}>From</th>
+            <th style={th}>State</th>
+            <th style={th}></th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr key={r.id}>
+              <td style={{ ...td, maxWidth: 460 }}>
+                <div style={{ lineHeight: 1.6 }}>
+                  “{r.quote.length > 130 ? `${r.quote.slice(0, 130)}…` : r.quote}”
+                </div>
+                {r.object && (
+                  <div style={{ fontSize: 10, color: '#B4B0A6', marginTop: 5 }}>{r.object}</div>
+                )}
+              </td>
+              <td style={td}>
+                <div>{r.name}</div>
+                <div style={{ fontSize: 10, color: '#B4B0A6', marginTop: 3 }}>
+                  {[r.city, r.country].filter(Boolean).join(' · ') || '—'}
+                </div>
+              </td>
+              <td style={td}>
+                <span
+                  onClick={() => togglePublished(r)}
+                  style={{
+                    cursor: 'pointer',
+                    fontSize: 10,
+                    letterSpacing: '0.14em',
+                    textTransform: 'uppercase',
+                    color: r.published ? '#2F6B4F' : '#B4B0A6',
+                  }}
+                >
+                  {r.published ? '● Live' : '○ Draft'}
+                </span>
+                {r.featured && (
+                  <div style={{ fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#6B6B68', marginTop: 6 }}>
+                    Featured
+                  </div>
+                )}
+                {!r.source_email && (
+                  <div style={{ fontSize: 10, color: '#B3402A', marginTop: 6 }}>No sender on record</div>
+                )}
+              </td>
+              <td style={{ ...td, textAlign: 'right', whiteSpace: 'nowrap' }}>
+                <span onClick={() => setEditing(r)} style={{ ...linkAction, marginRight: 18 }}>Edit</span>
+                <InlineConfirm onConfirm={() => remove(r.id)} question="Delete this letter?" />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {rows.length === 0 && (
+        <div style={{ fontSize: 13, color: '#6B6B68', padding: '30px 0' }}>
+          No letters yet. When somebody writes in, add it here.
+        </div>
+      )}
+
+      {(editing || creating) && (
+        <VoiceEditor
+          voice={editing}
+          onClose={() => {
+            setEditing(null);
+            setCreating(false);
+          }}
+          onSaved={load}
+        />
+      )}
+    </div>
+  );
+}

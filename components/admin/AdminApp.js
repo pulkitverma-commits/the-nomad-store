@@ -4,7 +4,7 @@ import { supabaseBrowser } from '@/lib/supabaseBrowser';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from '@/lib/supabase';
 import { inr, productImg } from '@/lib/format';
 import { label, th, td, inputStyle, btn, btnGhost, linkAction, InlineConfirm } from './ui';
-import { Journal, Drops, ComingSoon } from './Collections';
+import { Journal, Drops, ComingSoon, Voices } from './Collections';
 
 /* ─────────────── LOGIN ─────────────── */
 
@@ -812,6 +812,7 @@ export default function AdminApp() {
     ['journal', 'Journal'],
     ['drops', 'Drops'],
     ['soon', 'Coming soon'],
+    ['voices', 'Voices'],
     ['signups', 'Signups'],
     ['emails', 'Emails'],
   ];
@@ -856,6 +857,7 @@ export default function AdminApp() {
       {tab === 'journal' && <Journal />}
       {tab === 'drops' && <Drops />}
       {tab === 'soon' && <ComingSoon token={token} />}
+      {tab === 'voices' && <Voices />}
       {tab === 'signups' && <Signups />}
       {tab === 'emails' && <Emails />}
       <div style={{ height: 80 }} />

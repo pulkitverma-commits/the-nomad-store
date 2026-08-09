@@ -48,6 +48,7 @@ export default function Footer() {
             <Link href="/world">World Map</Link>
             <Link href="/drops">Nomad Drops</Link>
             <Link href="/soon">Coming Home Soon</Link>
+            <Link href="/voices">Voices</Link>
           </div>
         </div>
         <div>

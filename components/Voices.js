@@ -1,18 +1,24 @@
 import Link from 'next/link';
-import { testimonials } from '@/lib/testimonials';
+import { getTestimonials } from '@/lib/supabase';
 
 // The home page's testimonial band, sitting just above the footer.
 //
-// Deliberately built for a small number of real letters rather than a wall of
-// them. Two honest quotes read better than nine invented ones, and the layout
-// is chosen at render time so it never looks like there are gaps waiting to be
-// filled: one quote goes wide, two sit side by side, three or more fall into a
-// hairline grid. With none, the section does not render at all.
+// Shows at most three published letters and sends people to /voices for the
+// rest. Deliberately built for a small number of real letters: two honest
+// quotes read better than nine invented ones, so the layout is chosen from how
+// many exist — one goes wide, two sit side by side, three fall into the
+// hairline grid. With none, the section does not render at all, which is the
+// correct look for a shop nobody has written to yet.
+//
+// Content lives in the `testimonials` table and is edited in the admin panel.
+// Only rows ticked `published` are ever returned.
 
 const LINE = '#E8E8E5';
 const INK = '#111111';
 const MUTED = '#6B6B68';
 const FAINT = '#B4B0A6';
+
+const HOME_LIMIT = 3;
 
 function Quote({ t, big }) {
   return (
@@ -43,7 +49,7 @@ function Quote({ t, big }) {
           “{t.quote}”
         </blockquote>
       </div>
-      <figcaption style={{ marginTop: 36, paddingTop: 20, borderTop: `1px solid #F2F1ED` }}>
+      <figcaption style={{ marginTop: 36, paddingTop: 20, borderTop: '1px solid #F2F1ED' }}>
         <div style={{ fontSize: 13 }}>{t.name}</div>
         {t.city && <div style={{ fontSize: 11, color: MUTED, marginTop: 6 }}>{t.city}</div>}
         {t.object && (
@@ -64,10 +70,19 @@ function Quote({ t, big }) {
   );
 }
 
-export default function Voices() {
-  const list = testimonials.filter((t) => t && t.quote && t.name);
-  if (list.length === 0) return null;
+export default async function Voices() {
+  let all = [];
+  try {
+    all = await getTestimonials();
+  } catch {
+    // A section that cannot load its own content should be absent, not broken.
+    return null;
+  }
+  if (all.length === 0) return null;
 
+  // Featured first, then whatever order the admin set.
+  const ordered = [...all.filter((t) => t.featured), ...all.filter((t) => !t.featured)];
+  const list = ordered.slice(0, HOME_LIMIT);
   const columns = Math.min(list.length, 3);
 
   return (
@@ -107,9 +122,13 @@ export default function Voices() {
             What people wrote back
           </h2>
         </div>
-        <div style={{ fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: MUTED }}>
-          Unedited, published with permission
-        </div>
+        <Link
+          href="/voices"
+          className="underline-link"
+          style={{ fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase' }}
+        >
+          {all.length > list.length ? `All ${all.length} letters →` : 'Read the letters →'}
+        </Link>
       </div>
 
       <p
@@ -126,7 +145,7 @@ export default function Voices() {
       </p>
 
       {/* The 1px gap over a line-coloured background is what draws the hairline
-          rules between cards; grid-3 collapses it to one column under 640px. */}
+          rules between cards; grid-3 / grid-2 collapse it on small screens. */}
       <div
         className={columns === 3 ? 'grid-3' : 'grid-2'}
         style={{
@@ -137,8 +156,8 @@ export default function Voices() {
           border: `1px solid ${LINE}`,
         }}
       >
-        {list.map((t, i) => (
-          <Quote key={`${t.name}-${i}`} t={t} big={list.length === 1} />
+        {list.map((t) => (
+          <Quote key={t.id} t={t} big={list.length === 1} />
         ))}
       </div>
 
