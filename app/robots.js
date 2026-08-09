@@ -1,3 +1,4 @@
+import { SITE_URL } from '@/lib/site';
 export default function robots() {
   return {
     rules: {
@@ -14,6 +15,6 @@ export default function robots() {
         '/unsubscribe',
       ],
     },
-    sitemap: 'https://the-nomad-store.vercel.app/sitemap.xml',
+    sitemap: `${SITE_URL}/sitemap.xml`,
   };
 }

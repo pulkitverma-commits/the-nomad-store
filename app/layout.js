@@ -8,6 +8,7 @@ import Footer from '@/components/Footer';
 import BagDrawer from '@/components/BagDrawer';
 import SearchOverlay from '@/components/SearchOverlay';
 import { getProducts } from '@/lib/supabase';
+import { SITE_URL } from '@/lib/site';
 
 const sans = Instrument_Sans({
   subsets: ['latin'],
@@ -23,7 +24,7 @@ const serif = Cormorant_Garamond({
 });
 
 export const metadata = {
-  metadataBase: new URL('https://the-nomad-store.vercel.app'),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: 'The Nomad — Handcrafted Home Decor & Travel Gifts from 18 Countries',
     template: '%s · The Nomad',

@@ -1,7 +1,8 @@
 import { getProducts, getArticles } from '@/lib/supabase';
 import { countrySlug } from '@/lib/format';
+import { SITE_URL } from '@/lib/site';
 
-const BASE = 'https://the-nomad-store.vercel.app';
+const BASE = SITE_URL;
 
 export default async function sitemap() {
   let products = [];
