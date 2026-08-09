@@ -1,13 +1,17 @@
 import Link from 'next/link';
 import { getArticles } from '@/lib/supabase';
 import { img } from '@/lib/format';
+import JsonLd from '@/components/JsonLd';
+import { abs, breadcrumbLd, SITE_ID } from '@/lib/seo';
 
 export const revalidate = 60;
 
 export const metadata = {
-  title: 'Journal — Notes from the Places Our Objects Come From',
+  title: { absolute: 'Journal — Craft Stories from 18 Countries · The Nomad' },
   description:
     'City guides, field notes and craft stories from The Nomad’s collection trips: Kyoto, Lisbon, Seoul, Istanbul, Marrakech and beyond.',
+  alternates: { canonical: '/journal' },
+  openGraph: { url: '/journal', type: 'website', siteName: 'The Nomad' },
 };
 
 export default async function JournalPage() {
@@ -17,6 +21,28 @@ export default async function JournalPage() {
 
   return (
     <main style={{ maxWidth: 1560, margin: '0 auto', padding: '70px 40px 0' }}>
+      <JsonLd
+        data={[
+          {
+            '@context': 'https://schema.org',
+            '@type': 'Blog',
+            '@id': `${abs('/journal')}#blog`,
+            url: abs('/journal'),
+            name: 'The Nomad Journal',
+            description:
+              'City guides, field notes and craft stories from The Nomad’s collection trips.',
+            inLanguage: 'en-IN',
+            isPartOf: { '@id': SITE_ID },
+            blogPost: articles.map((a) => ({
+              '@type': 'BlogPosting',
+              headline: a.title,
+              url: abs(`/journal/${a.slug}`),
+              datePublished: a.created_at || undefined,
+            })),
+          },
+          breadcrumbLd([{ name: 'Journal', path: '/journal' }]),
+        ]}
+      />
       <div style={{ borderBottom: '1px solid #E8E8E5', paddingBottom: 40, marginBottom: 56 }}>
         <div style={{ fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#6B6B68', marginBottom: 20 }}>
           The Nomad Journal

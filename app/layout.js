@@ -9,6 +9,8 @@ import BagDrawer from '@/components/BagDrawer';
 import SearchOverlay from '@/components/SearchOverlay';
 import { getProducts } from '@/lib/supabase';
 import { SITE_URL } from '@/lib/site';
+import JsonLd from '@/components/JsonLd';
+import { organisationLd, webSiteLd } from '@/lib/seo';
 
 const sans = Instrument_Sans({
   subsets: ['latin'],
@@ -85,8 +87,13 @@ export default async function RootLayout({ children }) {
     image_public_id: p.image_public_id,
   }));
   return (
-    <html lang="en" className={`${sans.variable} ${serif.variable}`}>
+    // en-IN, not en: every price is in rupees and the shop ships inside India
+    // only, which the FAQ states outright.
+    <html lang="en-IN" className={`${sans.variable} ${serif.variable}`}>
       <body style={{ fontFamily: 'var(--font-sans), system-ui, sans-serif' }}>
+        {/* Sitewide identity. Every other graph on the site points back at
+            these two @ids instead of repeating the shop's details. */}
+        <JsonLd data={[organisationLd(), webSiteLd()]} />
         <UiProvider>
           <Header />
           {children}

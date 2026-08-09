@@ -4,7 +4,9 @@ import { PolicyPage, H, P, Small, Rows, Pull } from '@/components/PolicyPage';
 export const metadata = {
   title: 'Shipping',
   description:
-    'How we pack and post from New Delhi: free delivery over ₹2,500, ₹150 below it, dispatch in 2–3 working days, and 2–8 days on the road depending on where you are.',
+    'Free delivery over ₹2,500 and ₹150 below it, anywhere in India. Dispatch in 2–3 working days, then 2–8 days on the road. How we pack, and what is in the box.',
+  alternates: { canonical: '/shipping' },
+  openGraph: { url: '/shipping', type: 'website', siteName: 'The Nomad' },
 };
 
 export default function ShippingPage() {

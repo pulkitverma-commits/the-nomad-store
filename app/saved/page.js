@@ -7,6 +7,8 @@ export const metadata = {
   title: 'Saved Objects',
   description:
     'The objects you have set aside. Saved on this device only — nothing is sent to us and no account is required.',
+  alternates: { canonical: '/saved' },
+  openGraph: { url: '/saved', type: 'website', siteName: 'The Nomad' },
   robots: { index: false, follow: true },
 };
 

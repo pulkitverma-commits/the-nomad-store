@@ -2,9 +2,11 @@ import Link from 'next/link';
 import { PolicyPage, H, P, Small, Rows } from '@/components/PolicyPage';
 
 export const metadata = {
-  title: 'Contact',
+  title: 'Contact The Nomad',
   description:
-    'Write to hype@thenomad.buzz. One reply, from one of two people, usually within a working day — slower when we are on a collection trip. Studio address in New Delhi.',
+    'Write to hype@thenomad.buzz. One reply, from one of two people, usually within a working day — slower when we are on a collection trip.',
+  alternates: { canonical: '/contact' },
+  openGraph: { url: '/contact', type: 'website', siteName: 'The Nomad' },
 };
 
 export default function ContactPage() {

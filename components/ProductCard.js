@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { inr, productImg, stockNote } from '@/lib/format';
+import { inr, productImg, productSrcSet, stockNote } from '@/lib/format';
 
 export default function ProductCard({ p, usePop = false, showStock = false, imgWidth = 500 }) {
   return (
@@ -8,7 +8,21 @@ export default function ProductCard({ p, usePop = false, showStock = false, imgW
         className="zoomable"
         style={{ aspectRatio: '4/5', background: usePop ? p.pop : p.tone }}
       >
-        <img src={productImg(p, imgWidth)} alt={`${p.name} — ${p.material}, handcrafted in ${p.city}`} loading="lazy" />
+        {/* The card is the most-repeated image on the site — 42 of them on
+            /shop alone. `sizes` follows the real grid: four columns on a wide
+            screen, two on a tablet, one on a phone, so a 390px device stops
+            downloading a 500px-wide negative for a 350px slot. The wrapper
+            already fixes the box at 4:5, so nothing here can shift layout. */}
+        <img
+          src={productImg(p, imgWidth)}
+          srcSet={productSrcSet(p, [320, 500, 800])}
+          sizes="(max-width: 640px) 100vw, (max-width: 1100px) 50vw, 25vw"
+          alt={`${p.name} — ${p.material}, handcrafted in ${p.city}`}
+          width={400}
+          height={500}
+          loading="lazy"
+          decoding="async"
+        />
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, marginTop: 18 }}>
         <div style={{ fontSize: 14, lineHeight: 1.4 }}>{p.name}</div>

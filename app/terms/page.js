@@ -4,7 +4,9 @@ import { PolicyPage, H, P, Small, Rows } from '@/components/PolicyPage';
 export const metadata = {
   title: 'Terms',
   description:
-    'The terms on which The Nomad sells: pricing in rupees, how orders are accepted, what happens when stock runs out mid-order, payment methods, delivery, returns and liability. Plain English, last updated 8 August 2026.',
+    'The terms on which The Nomad sells: rupee pricing, how orders are accepted, what happens when stock runs out mid-order, payment, delivery, returns and liability.',
+  alternates: { canonical: '/terms' },
+  openGraph: { url: '/terms', type: 'website', siteName: 'The Nomad' },
 };
 
 export default function TermsPage() {

@@ -1,9 +1,10 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getProducts, getProduct } from '@/lib/supabase';
+import { getProducts, getProduct, getArticles } from '@/lib/supabase';
 import {
   inr,
   productImg,
+  productSrcSet,
   productDetailImg,
   mapTiles,
   deg,
@@ -12,25 +13,45 @@ import {
 } from '@/lib/format';
 import AddToBag from '@/components/AddToBag';
 import ProductCard from '@/components/ProductCard';
+import JsonLd from '@/components/JsonLd';
+import { breadcrumbLd, fitTitle, productLd, productMetaDescription } from '@/lib/seo';
+import { articleForCountry } from '@/lib/related';
 
 export const revalidate = 60;
 
 export async function generateMetadata({ params }) {
   const p = await getProduct(params.slug);
+  // An unknown slug renders the 404, which brings its own noindex metadata.
   if (!p) return {};
+  const path = `/product/${p.slug}`;
   return {
-    title: `${p.name} — Handcrafted in ${p.city}, ${p.country}`,
-    description: `${p.description} ${p.material}, ${inr(p.price)}. A unique handcrafted object discovered in ${p.city} and brought home to India by The Nomad.`,
+    // Five object names are long enough that "— Handcrafted in <city>,
+    // <country>" pushes the title past what a result shows. Where that
+    // happens the country is dropped rather than the object's own name; the
+    // country is still in the breadcrumb, the H1 area and the schema.
+    title: fitTitle(
+      `${p.name} — Handcrafted in ${p.city}, ${p.country}`.length > 60
+        ? `${p.name} — Handcrafted in ${p.city}`
+        : `${p.name} — Handcrafted in ${p.city}, ${p.country}`
+    ),
+    description: productMetaDescription(p),
+    alternates: { canonical: path },
     // No openGraph.images here on purpose. Setting it would override the
     // opengraph-image.js file convention in this folder, which composes the
     // photograph with the object's name, origin and price — a far better card
     // than the bare photograph on its own.
+    openGraph: { url: path, type: 'website', siteName: 'The Nomad' },
   };
 }
 
 export default async function ProductPage({ params }) {
-  const [p, all] = await Promise.all([getProduct(params.slug), getProducts()]);
+  const [p, all, articles] = await Promise.all([
+    getProduct(params.slug),
+    getProducts(),
+    getArticles(),
+  ]);
   if (!p) notFound();
+  const story = articleForCountry(articles, p.country);
   const related = all
     .filter((x) => x.id !== p.id && (x.country === p.country || x.category === p.category))
     .slice(0, 4);
@@ -53,27 +74,24 @@ export default async function ProductPage({ params }) {
     { k: 'Collection', v: 'No. 0' + (274 + p.id) },
   ];
 
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Product',
-    name: p.name,
-    description: p.description,
-    image: productImg(p, 1200),
-    sku: p.object_no,
-    brand: { '@type': 'Brand', name: 'The Nomad' },
-    offers: {
-      '@type': 'Offer',
-      priceCurrency: 'INR',
-      price: p.price,
-      availability:
-        p.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-    },
-  };
+  // Price, availability and material below all read from the same row the page
+  // renders from, so the markup cannot drift from what a shopper sees.
+  const graphs = [
+    productLd(p),
+    breadcrumbLd([
+      { name: 'Objects', path: '/shop' },
+      { name: p.country, path: `/country/${countrySlug(p.country)}` },
+      { name: p.name, path: `/product/${p.slug}` },
+    ]),
+  ];
 
   return (
     <main>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <div
+      <JsonLd data={graphs} />
+      {/* A real <nav>/<ol> rather than a row of divs, so the trail is
+          announced as a breadcrumb and matches the BreadcrumbList above. */}
+      <nav
+        aria-label="Breadcrumb"
         style={{
           maxWidth: 1560,
           margin: '0 auto',
@@ -84,9 +102,18 @@ export default async function ProductPage({ params }) {
           color: '#6B6B68',
         }}
       >
-        <Link href="/shop" style={{ color: '#6B6B68' }}>Objects</Link> /{' '}
-        <Link href={`/country/${countrySlug(p.country)}`} style={{ color: '#6B6B68' }}>{p.country}</Link> / {p.city}
-      </div>
+        <ol style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <li><Link href="/shop" style={{ color: '#6B6B68' }}>Objects</Link></li>
+          <li aria-hidden="true">/</li>
+          <li>
+            <Link href={`/country/${countrySlug(p.country)}`} style={{ color: '#6B6B68' }}>
+              {p.country}
+            </Link>
+          </li>
+          <li aria-hidden="true">/</li>
+          <li aria-current="page">{p.city}</li>
+        </ol>
+      </nav>
       <section
         className="split"
         style={{
@@ -100,9 +127,17 @@ export default async function ProductPage({ params }) {
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingLeft: 40 }}>
           <div style={{ aspectRatio: '1', background: p.tone, overflow: 'hidden' }}>
+            {/* The object's own photograph: the largest paint on the page and
+                the LCP element on every product view. Given priority, a real
+                srcset, and left eager while the detail crop and the map tiles
+                below it stay lazy. */}
             <img
               src={productImg(p, 1200)}
+              srcSet={productSrcSet(p, [600, 900, 1200, 1600])}
+              sizes="(max-width: 900px) 100vw, 55vw"
               alt={`${p.name} — ${p.material}, handcrafted in ${p.city}`}
+              fetchPriority="high"
+              decoding="async"
               style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
             />
           </div>
@@ -307,15 +342,32 @@ export default async function ProductPage({ params }) {
             <div style={{ fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#6B6B68', marginBottom: 20 }}>
               Where we found it
             </div>
-            <h3 className="serif" style={{ fontWeight: 300, fontSize: 52, lineHeight: 1, margin: '0 0 14px' }}>
+            {/* h2, not h3: the page goes h1 (the object) straight to these
+                section headings, and skipping a level is what Lighthouse's
+                heading-order audit was catching. Nothing moves visually. */}
+            <h2 className="serif" style={{ fontWeight: 300, fontSize: 52, lineHeight: 1, margin: '0 0 14px' }}>
               {p.city}
-            </h3>
+            </h2>
             <div style={{ fontSize: 13, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#6B6B68', marginBottom: 26 }}>
               {p.country}
             </div>
             <div style={{ fontSize: 13, lineHeight: 1.9, color: '#6B6B68', maxWidth: '40ch' }}>
               A short walk from the centre, in a district where workshops still sit between
               apartments and the same families have worked the same trade for three generations.
+            </div>
+            {/* Descriptive links out of the object and into the places it
+                belongs to — the country edit, the city's other objects and the
+                journal story about that trip. Previously this block was a
+                dead end. */}
+            <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', marginTop: 26, fontSize: 13 }}>
+              <Link href={`/country/${countrySlug(p.country)}`} className="muted-link">
+                All objects from {p.country}
+              </Link>
+              {story && (
+                <Link href={`/journal/${story.slug}`} className="muted-link">
+                  {story.title}
+                </Link>
+              )}
             </div>
             <div style={{ display: 'flex', gap: 36, marginTop: 32, paddingTop: 24, borderTop: '1px solid #E8E8E5' }}>
               <div>
@@ -378,9 +430,9 @@ export default async function ProductPage({ params }) {
 
       <section style={{ maxWidth: 1560, margin: '0 auto', padding: '110px 40px 0' }}>
         <div style={{ borderBottom: '1px solid #E8E8E5', paddingBottom: 24, marginBottom: 44 }}>
-          <h3 className="serif" style={{ fontWeight: 300, fontSize: 40, margin: 0 }}>
+          <h2 className="serif" style={{ fontWeight: 300, fontSize: 40, margin: 0 }}>
             You May Also Discover
-          </h3>
+          </h2>
         </div>
         <div className="grid-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 32 }}>
           {related.map((r) => (

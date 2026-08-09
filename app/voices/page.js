@@ -13,9 +13,11 @@ import { NAV_RESERVE } from '@/lib/nav';
 export const revalidate = 60;
 
 export const metadata = {
-  title: 'Voices — what people wrote back',
+  title: 'Voices — What People Wrote Back',
   description:
-    'Letters from people who bought something from The Nomad — where the object ended up, and what happened to it there.',
+    'Letters from people who bought something from The Nomad — where the handcrafted object ended up, and what happened to it there.',
+  alternates: { canonical: '/voices' },
+  openGraph: { url: '/voices', type: 'website', siteName: 'The Nomad' },
 };
 
 const INK = '#111111';

@@ -7,7 +7,9 @@ export const revalidate = 60;
 export const metadata = {
   title: 'Coming Home Soon — Objects in Transit',
   description:
-    'Handcrafted objects we have already bought, packed and shipped — currently somewhere between a workshop and a Mumbai customs shed. Get notified when they arrive in India.',
+    'Handcrafted objects already bought, packed and shipped — somewhere between a workshop and an Indian customs shed. Get notified when they land.',
+  alternates: { canonical: '/soon' },
+  openGraph: { url: '/soon', type: 'website', siteName: 'The Nomad' },
 };
 
 export default async function SoonPage() {

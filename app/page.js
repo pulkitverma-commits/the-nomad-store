@@ -8,13 +8,16 @@ import WorldMap from '@/components/WorldMap';
 import NotifyButton from '@/components/NotifyButton';
 import HeroPostcards from '@/components/HeroPostcards';
 import Voices from '@/components/Voices';
+import { GIFT_GUIDES, guideProducts } from '@/lib/giftGuides';
 
 export const revalidate = 60;
 
 export const metadata = {
-  title: { absolute: 'The Nomad — Handcrafted Home Decor & Travel Gifts from 18 Countries' },
+  title: { absolute: 'The Nomad — Handcrafted Home Decor & Gifts, 18 Countries' },
   description:
-    'Shop unique handcrafted home decor and artisan travel gifts — handmade ceramics, brass, marble and letterpress objects discovered across 18 countries, brought home to India. Nothing over ₹5,000.',
+    'Handcrafted home decor and artisan travel gifts — handmade ceramics, brass, marble and letterpress objects discovered across 18 countries. Nothing over ₹5,000.',
+  alternates: { canonical: '/' },
+  openGraph: { url: '/', type: 'website', siteName: 'The Nomad' },
 };
 
 const sticker = (extra) => ({
@@ -84,13 +87,21 @@ export default async function Home() {
   const arrivals = products.slice(0, 4);
   const tokyoEdit = products.filter((p) => p.city === 'Tokyo' || p.city === 'Osaka').slice(0, 3);
   const journalHome = articles.slice(0, 3);
+  // Three of these six tiles used to quote counts nobody could source
+  // ("Gifts for designers · 11 objects") and all six linked to /gifts. Each
+  // one is now a real edit with a real count and its own destination.
   const giftTiles = [
-    { label: 'Under ₹1,500', meta: products.filter((p) => p.price < 1500).length + ' objects' },
-    { label: 'Under ₹3,000', meta: products.filter((p) => p.price < 3000).length + ' objects' },
-    { label: 'Under ₹5,000', meta: products.length + ' objects' },
-    { label: 'Gifts for designers', meta: '11 objects' },
-    { label: 'Gifts for travellers', meta: '9 objects' },
-    { label: 'Housewarming', meta: '14 objects' },
+    ...GIFT_GUIDES.map((g) => ({
+      label: g.heading,
+      meta: guideProducts(g, products).length + ' objects',
+      href: `/gifts/${g.slug}`,
+    })),
+    { label: 'Under ₹5,000', meta: products.length + ' objects', href: '/gifts' },
+    ...countryList.slice(0, 2).map((c) => ({
+      label: `From ${c}`,
+      meta: countryCounts[c] + (countryCounts[c] === 1 ? ' object' : ' objects'),
+      href: `/country/${countrySlug(c)}`,
+    })),
   ];
   const foundThisWeek = [
     { name: 'Porcelain soy dish', note: 'Tokyo · 4 found' },
@@ -411,9 +422,9 @@ export default async function Home() {
               <div style={{ fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#5A5A57', marginBottom: 28 }}>
                 Nomad Drop 006
               </div>
-              <h3 className="serif" style={{ fontWeight: 300, fontSize: 64, lineHeight: 1, margin: '0 0 18px' }}>
+              <h2 className="serif" style={{ fontWeight: 300, fontSize: 64, lineHeight: 1, margin: '0 0 18px' }}>
                 Tokyo
-              </h3>
+              </h2>
               <p style={{ fontSize: 14, lineHeight: 1.7, color: '#4A4A47', maxWidth: '38ch', margin: 0 }}>
                 Twenty-eight objects, collected over six days and released at once. When they are
                 gone, they are gone.
@@ -585,7 +596,7 @@ export default async function Home() {
             {giftTiles.map((g) => (
               <Link
                 key={g.label}
-                href="/gifts"
+                href={g.href}
                 className="gift-tile"
                 style={{
                   background: '#F3E0CE',

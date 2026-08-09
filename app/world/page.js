@@ -8,7 +8,9 @@ export const revalidate = 60;
 export const metadata = {
   title: 'World Map — Everywhere We Have Been',
   description:
-    'Every handcrafted object has coordinates. Explore the cities and countries where The Nomad has collected artisan home decor and travel gifts — 29 cities across 18 countries.',
+    'Every handcrafted object has coordinates. Explore the 29 cities across 18 countries where The Nomad has collected artisan home decor and travel gifts.',
+  alternates: { canonical: '/world' },
+  openGraph: { url: '/world', type: 'website', siteName: 'The Nomad' },
 };
 
 export default async function WorldPage() {

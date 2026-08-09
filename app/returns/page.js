@@ -4,7 +4,9 @@ import { PolicyPage, H, P, Small, Rows, Pull } from '@/components/PolicyPage';
 export const metadata = {
   title: 'Returns',
   description:
-    'Fourteen days from delivery, unused and in its original wrapping, with the passport card. Refunds to the original payment method within 7 working days. Damaged in transit? Send a photograph within 48 hours.',
+    'Fourteen days from delivery, unused and in its original wrapping, with the passport card. Refunds to the original payment method within 7 working days.',
+  alternates: { canonical: '/returns' },
+  openGraph: { url: '/returns', type: 'website', siteName: 'The Nomad' },
 };
 
 export default function ReturnsPage() {

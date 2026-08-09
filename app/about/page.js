@@ -12,9 +12,11 @@ import { NAV_RESERVE } from '@/lib/nav';
 export const revalidate = 60;
 
 export const metadata = {
-  title: 'About — a shop that started as a suitcase',
+  title: 'About — A Shop That Started as a Suitcase',
   description:
     'The Nomad buys small, buys directly, and pays workshops upfront. Who runs it, how it works, and where it has been since 2024.',
+  alternates: { canonical: '/about' },
+  openGraph: { url: '/about', type: 'website', siteName: 'The Nomad' },
 };
 
 const INK = '#111111';

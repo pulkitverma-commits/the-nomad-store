@@ -4,7 +4,9 @@ import { PolicyPage, H, P, Small, Rows } from '@/components/PolicyPage';
 export const metadata = {
   title: 'Privacy',
   description:
-    'Exactly what The Nomad collects — name, email, phone and address for orders; email alone for the newsletter, drops and notify-me — who processes it (Supabase, Vercel, Mandrill, Cloudinary, MapTiler) and how to get it deleted.',
+    'Exactly what The Nomad collects, who processes it — Supabase, Vercel, Mandrill, Cloudinary, MapTiler — how long it is kept, and how to have it deleted.',
+  alternates: { canonical: '/privacy' },
+  openGraph: { url: '/privacy', type: 'website', siteName: 'The Nomad' },
 };
 
 export default function PrivacyPage() {

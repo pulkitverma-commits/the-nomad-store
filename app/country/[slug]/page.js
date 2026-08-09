@@ -1,7 +1,11 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getProducts, supabase } from '@/lib/supabase';
-import { cld, countrySlug, COUNTRY_PHOTOS } from '@/lib/format';
+import { getProducts, getArticles, supabase } from '@/lib/supabase';
+import { cld, countrySlug, srcSetFor, COUNTRY_PHOTOS } from '@/lib/format';
 import ProductCard from '@/components/ProductCard';
+import JsonLd from '@/components/JsonLd';
+import { breadcrumbLd, fitTitle, itemListLd, trimTo } from '@/lib/seo';
+import { articleForCountry } from '@/lib/related';
 import { NAV_RESERVE } from '@/lib/nav';
 
 export const revalidate = 60;
@@ -43,26 +47,56 @@ export async function generateMetadata({ params }) {
   const country = products.find((p) => countrySlug(p.country) === params.slug)?.country;
   if (!country) return {};
   const row = await getCountry(params.slug);
+  const n = products.filter((p) => countrySlug(p.country) === params.slug).length;
+  const path = `/country/${params.slug}`;
   return {
-    title: `${country} — Handcrafted Objects & Artisan Home Decor`,
-    description: row?.body
-      ? `${row.body} Shop the objects we brought home from ${country}.`.slice(0, 300)
-      : `Shop unique handcrafted objects from ${country}: artisan home decor, handmade ceramics and travel gifts discovered on the ground and brought home to India.`,
-    openGraph: row?.hero_public_id ? { images: [cld(row.hero_public_id, 1200)] } : undefined,
+    title: fitTitle(`${country} — Handcrafted Objects & Artisan Home Decor`),
+    // The old description was `row.body` cut at exactly 300 characters, which
+    // ran past what a result shows and stopped mid-sentence on all eighteen
+    // country pages. This leads with what the page actually offers and then
+    // borrows the country's own words, trimmed on a sentence boundary.
+    description: trimTo(
+      `${n} handcrafted ${n === 1 ? 'object' : 'objects'} from ${country} — bought in the workshop and brought home to India. ${row?.body || ''}`,
+      158
+    ),
+    alternates: { canonical: path },
+    openGraph: {
+      url: path,
+      type: 'website',
+      siteName: 'The Nomad',
+      images: row?.hero_public_id ? [cld(row.hero_public_id, 1200)] : undefined,
+    },
   };
 }
 
 export default async function CountryPage({ params }) {
-  const [products, row] = await Promise.all([getProducts(), getCountry(params.slug)]);
+  const [products, row, articles] = await Promise.all([
+    getProducts(),
+    getCountry(params.slug),
+    getArticles(),
+  ]);
   const list = products.filter((p) => countrySlug(p.country) === params.slug);
   if (list.length === 0) notFound();
   const country = list[0].country;
   const cities = {};
   list.forEach((p) => (cities[p.city] = (cities[p.city] || 0) + 1));
   const copy = row || fallbackCopy(country, params.slug, list);
+  const story = articleForCountry(articles, country);
 
   return (
     <main>
+      <JsonLd
+        data={[
+          itemListLd(list, {
+            path: `/country/${params.slug}`,
+            name: `Handcrafted objects from ${country}`,
+          }),
+          breadcrumbLd([
+            { name: 'World map', path: '/world' },
+            { name: country, path: `/country/${params.slug}` },
+          ]),
+        ]}
+      />
       <section
         style={{
           background: '#EEECE6',
@@ -176,11 +210,31 @@ export default async function CountryPage({ params }) {
                 </div>
               ))}
             </div>
+            {/* Out of the country and into the writing about it — the journal
+                story from this trip, and the gift guides the objects qualify
+                for. Descriptive anchors, not "read more". */}
+            <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', marginTop: 26, fontSize: 13 }}>
+              {story && (
+                <Link href={`/journal/${story.slug}`} className="muted-link">
+                  {story.title}
+                </Link>
+              )}
+              <Link href="/gifts" className="muted-link">
+                Gifts from {country} under ₹5,000
+              </Link>
+              <Link href="/shop" className="muted-link">
+                All 42 objects
+              </Link>
+            </div>
           </div>
           <div>
             <div style={{ aspectRatio: '1', background: '#E4E2DB', overflow: 'hidden' }}>
               <img
                 src={cld(copy.hero_public_id, 900)}
+                srcSet={srcSetFor(copy.hero_public_id, [600, 900, 1200])}
+                sizes="(max-width: 900px) 100vw, 45vw"
+                width={900}
+                height={900}
                 alt={copy.hero_caption || `${country} — a collection trip`}
                 style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
               />

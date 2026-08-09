@@ -28,6 +28,8 @@ export const metadata = {
   title: 'Nomad Drops — One Trip, Released All at Once',
   description:
     'A Nomad drop is one collection trip released in one moment: limited handcrafted objects, nothing restocked, nothing discounted. Join the list for Drop 006 — Tokyo.',
+  alternates: { canonical: '/drops' },
+  openGraph: { url: '/drops', type: 'website', siteName: 'The Nomad' },
 };
 
 export default async function DropsPage() {
