@@ -25,6 +25,24 @@ const sticker = (extra) => ({
   ...extra,
 });
 
+// The brand marks scattered around the hero. Widths are per sticker rather than
+// shared, because the aspect ratios run from 1.2:1 (Bloom Sends, which is two
+// lines) to 5.1:1 (shipped with care) — a single width would make the wide ones
+// enormous and the square one a stamp. The first six keep the positions and
+// rotations the previous hand-built stickers used, so the composition around
+// the headline is unchanged.
+const HERO_STICKERS = [
+  { id: 'parcelworks', w: 190, at: { left: '5.5%', top: '42%', transform: 'rotate(-9deg)' } },
+  { id: 'marlow', w: 150, at: { left: '9%', top: '54%', transform: 'rotate(6deg)' } },
+  { id: 'bloomsends', w: 118, at: { left: '5%', bottom: '11%', transform: 'rotate(-12deg)' } },
+  { id: 'homestead', w: 180, at: { right: '5.5%', top: '40%', transform: 'rotate(7deg)' } },
+  { id: 'fletch', w: 155, at: { right: '9%', top: '54%', transform: 'rotate(-5deg)' } },
+  { id: 'trustedsupply', w: 175, at: { right: '5%', bottom: '12%', transform: 'rotate(4deg)' } },
+  // The widest of the set, so it sits high on the left where there is clear
+  // width — any lower and it would run into the headline's centre column.
+  { id: 'shippedwithcare', w: 200, at: { left: '6%', top: '27%', transform: 'rotate(-6deg)' } },
+];
+
 export default async function Home() {
   const [products, articles, soon] = await Promise.all([
     getProducts(),
@@ -132,112 +150,29 @@ export default async function Home() {
           </div>
           <HeroPostcards />
         </div>
-        <div
-          className="hero-sticker"
-          style={sticker({
-            left: '5.5%',
-            top: '42%',
-            transform: 'rotate(-9deg)',
-            background: '#FFFDF4',
-            borderRadius: 14,
-            padding: '15px 24px',
-            fontSize: 13,
-            fontWeight: 600,
-            letterSpacing: '0.14em',
-            textTransform: 'uppercase',
-          })}
-        >
-          Found in Kyoto
-        </div>
-        <div
-          className="hero-sticker serif"
-          style={sticker({
-            left: '9%',
-            top: '54%',
-            transform: 'rotate(6deg)',
-            background: '#D96C47',
-            color: '#FFFDF4',
-            borderRadius: 999,
-            padding: '12px 24px',
-            fontStyle: 'italic',
-            fontSize: 22,
-          })}
-        >
-          hand-carried
-        </div>
-        <div
-          className="hero-sticker"
-          style={sticker({
-            left: '5%',
-            bottom: '11%',
-            transform: 'rotate(-12deg)',
-            width: 116,
-            height: 116,
-            borderRadius: '50%',
-            background: '#2E3A59',
-            color: '#FFFDF4',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            textAlign: 'center',
-          })}
-        >
-          <div style={{ fontSize: 9, letterSpacing: '0.28em', textTransform: 'uppercase' }}>The Nomad</div>
-          <div className="serif" style={{ fontSize: 34, lineHeight: 1, margin: '6px 0' }}>TN</div>
-          <div style={{ fontSize: 8, letterSpacing: '0.24em', textTransform: 'uppercase' }}>Est. 2026</div>
-        </div>
-        <div
-          className="hero-sticker"
-          style={sticker({
-            right: '5.5%',
-            top: '40%',
-            transform: 'rotate(7deg)',
-            background: '#FFFDF4',
-            borderRadius: 14,
-            padding: '14px 22px',
-            textAlign: 'left',
-          })}
-        >
-          <div style={{ fontSize: 9, letterSpacing: '0.26em', textTransform: 'uppercase', color: '#B4B0A6' }}>
-            Currently in
-          </div>
-          <div style={{ fontSize: 15, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: 5 }}>
-            Tokyo →
-          </div>
-        </div>
-        <div
-          className="hero-sticker"
-          style={sticker({
-            right: '9%',
-            top: '54%',
-            transform: 'rotate(-5deg)',
-            background: '#5F7355',
-            color: '#FFFDF4',
-            borderRadius: 12,
-            padding: '13px 22px',
-            fontSize: 13,
-            fontWeight: 600,
-            letterSpacing: '0.08em',
-          })}
-        >
-          42 objects · 18 countries
-        </div>
-        <div
-          className="hero-sticker serif"
-          style={sticker({
-            right: '5%',
-            bottom: '12%',
-            transform: 'rotate(4deg)',
-            background: '#FFFDF4',
-            borderRadius: 999,
-            padding: '12px 24px',
-            fontStyle: 'italic',
-            fontSize: 21,
-          })}
-        >
-          nothing over ₹5,000
-        </div>
+        {HERO_STICKERS.map((st) => (
+          <img
+            key={st.id}
+            className="hero-sticker"
+            src={img(`sticker-${st.id}`, st.w * 2)}
+            alt=""
+            /* Decorative brand marks. Announcing six logos to a screen reader
+               between the headline and the call to action would be noise. */
+            aria-hidden="true"
+            loading="lazy"
+            width={st.w}
+            style={sticker({
+              ...st.at,
+              width: st.w,
+              height: 'auto',
+              // These are transparent PNGs, so the shared boxShadow would draw
+              // a rectangle around the bounding box rather than the sticker.
+              // drop-shadow follows the alpha silhouette instead.
+              boxShadow: 'none',
+              filter: 'drop-shadow(0 10px 20px rgba(17,17,17,0.14))',
+            })}
+          />
+        ))}
       </section>
 
       {/* JUST ARRIVED */}
