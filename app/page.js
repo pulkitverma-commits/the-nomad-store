@@ -214,7 +214,10 @@ export default async function Home() {
         style={{
           position: 'absolute',
           zIndex: 4,
-          left: '5.5%',
+          // Moved in from 5.5%. The seam is clear all the way across — the
+          // postcard stack ends well above it — so this is free to slide right
+          // without colliding with anything.
+          left: '15%',
           bottom: -Math.round(SEAM_STICKER.w / SEAM_STICKER.ratio / 2),
           width: SEAM_STICKER.w,
           height: 'auto',
