@@ -39,8 +39,15 @@ const HERO_STICKERS = [
   { id: 'fletch', w: 155, at: { right: '9%', top: '54%', transform: 'rotate(-5deg)' } },
   { id: 'trustedsupply', w: 175, at: { right: '5%', bottom: '12%', transform: 'rotate(4deg)' } },
   // The widest of the set, so it sits high on the left where there is clear
-  // width — any lower and it would run into the headline's centre column.
-  { id: 'shippedwithcare', w: 200, at: { left: '6%', top: '27%', transform: 'rotate(-6deg)' } },
+  // width — any lower and it would run into the headline's centre column. The
+  // clamp lets it reach 250px on a roomy screen without pushing into that
+  // column on a narrow laptop, where a flat 250 would collide.
+  {
+    id: 'shippedwithcare',
+    w: 250,
+    wCss: 'clamp(185px, 17vw, 250px)',
+    at: { left: '6%', top: '27%', transform: 'rotate(-6deg)' },
+  },
 ];
 
 export default async function Home() {
@@ -163,7 +170,10 @@ export default async function Home() {
             width={st.w}
             style={sticker({
               ...st.at,
-              width: st.w,
+              // `wCss` lets a sticker shrink in the squeeze between 900px and
+              // ~1150px, where the side columns close in on the centred
+              // headline. Everything else takes its fixed width.
+              width: st.wCss || st.w,
               height: 'auto',
               // These are transparent PNGs, so the shared boxShadow would draw
               // a rectangle around the bounding box rather than the sticker.
