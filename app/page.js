@@ -38,15 +38,21 @@ const HERO_STICKERS = [
   { id: 'homestead', w: 180, at: { right: '5.5%', top: '40%', transform: 'rotate(7deg)' } },
   { id: 'fletch', w: 155, at: { right: '9%', top: '54%', transform: 'rotate(-5deg)' } },
   { id: 'trustedsupply', w: 175, at: { right: '5%', bottom: '12%', transform: 'rotate(4deg)' } },
-  // The widest of the set, so it sits high on the left where there is clear
-  // width — any lower and it would run into the headline's centre column. The
-  // clamp lets it reach 250px on a roomy screen without pushing into that
-  // column on a narrow laptop, where a flat 250 would collide.
+  // The widest of the set. At 375px it is big enough to reach the headline, so
+  // its width tracks the space actually available beside it rather than a flat
+  // number or a plain vw fraction.
+  //
+  // The headline caps at 96px, so "Bringing Home" stays ~566px wide and its
+  // left edge sits at roughly vw/2 - 283. With the sticker at left:2%, keeping
+  // a 20px gap means width <= 0.48vw - 303. That is the calc below, capped at
+  // 375 and floored at 150. Measured in an iframe at 1000/1100/1200/1280 it
+  // holds the gap at exactly 20px, and at 1470 it reaches full size with 48px
+  // to spare. A flat 375 collides with the headline from 1280 down.
   {
     id: 'shippedwithcare',
-    w: 250,
-    wCss: 'clamp(185px, 17vw, 250px)',
-    at: { left: '6%', top: '27%', transform: 'rotate(-6deg)' },
+    w: 375,
+    wCss: 'clamp(150px, calc(48vw - 303px), 375px)',
+    at: { left: '2%', top: '30%', transform: 'rotate(-6deg)' },
   },
 ];
 
