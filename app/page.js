@@ -25,14 +25,17 @@ const sticker = (extra) => ({
   ...extra,
 });
 
-// The brand marks scattered around the hero. Widths are per sticker rather than
+// parcelworks straddles the hero's bottom edge, so it lives outside the sticker
+// list — the hero clips its overflow and would cut it in half. 266px is 40%
+// larger than the 190px it ran at inside. `ratio` is the artwork's own aspect
+// (1458 x 336), used to push exactly half its height below the seam.
+const SEAM_STICKER = { w: 266, ratio: 1458 / 336 };
+
+// The brand marks scattered inside the hero. Widths are per sticker rather than
 // shared, because the aspect ratios run from 1.2:1 (Bloom Sends, which is two
 // lines) to 5.1:1 (shipped with care) — a single width would make the wide ones
-// enormous and the square one a stamp. The first six keep the positions and
-// rotations the previous hand-built stickers used, so the composition around
-// the headline is unchanged.
+// enormous and the square one a stamp.
 const HERO_STICKERS = [
-  { id: 'parcelworks', w: 190, at: { left: '5.5%', top: '42%', transform: 'rotate(-9deg)' } },
   { id: 'marlow', w: 150, at: { left: '9%', top: '54%', transform: 'rotate(6deg)' } },
   // Raised 100px off its original 11%. Kept as a calc rather than folded into
   // a new percentage so the offset stays a fixed 100px at every viewport —
@@ -98,7 +101,12 @@ export default async function Home() {
 
   return (
     <main style={{ background: '#FCF7E8' }}>
-      {/* HERO */}
+      {/* HERO
+          Wrapped because the section clips its own overflow (which keeps the
+          postcards and stickers inside it). The parcelworks sticker straddles
+          the hero's bottom edge, so it has to be positioned against something
+          that does not clip — hence this wrapper rather than the section. */}
+      <div style={{ position: 'relative' }}>
       <section
         style={{
           position: 'relative',
@@ -193,6 +201,28 @@ export default async function Home() {
           />
         ))}
       </section>
+      {/* Sits ON the seam between the sand hero and the cream page below —
+          half on each, the way a sticker actually lands. Half its own height
+          is pushed below the edge, so the offset tracks the artwork rather
+          than a magic number. */}
+      <img
+        className="hero-sticker"
+        src={img('sticker-parcelworks', SEAM_STICKER.w * 2)}
+        alt=""
+        aria-hidden="true"
+        width={SEAM_STICKER.w}
+        style={{
+          position: 'absolute',
+          zIndex: 4,
+          left: '5.5%',
+          bottom: -Math.round(SEAM_STICKER.w / SEAM_STICKER.ratio / 2),
+          width: SEAM_STICKER.w,
+          height: 'auto',
+          transform: 'rotate(-9deg)',
+          filter: 'drop-shadow(0 10px 20px rgba(17,17,17,0.14))',
+        }}
+      />
+      </div>
 
       {/* JUST ARRIVED */}
       <section style={{ maxWidth: 1560, margin: '0 auto', padding: '120px 40px 0' }}>
