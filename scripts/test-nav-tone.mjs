@@ -31,7 +31,7 @@ check('/signin matches /account', navTone('/signin') === navTone('/account'));
 check('prefix is not a substring match', navTone('/shopping-list') === DEFAULT_TONE, navTone('/shopping-list'));
 
 const ROUTES = ['/', '/shop', '/product/x', '/country/japan', '/gifts', '/drops', '/journal',
-  '/world', '/voices', '/soon', '/saved', '/account', '/signin', '/contact'];
+  '/world', '/voices', '/about', '/soon', '/saved', '/account', '/signin', '/contact'];
 
 console.log('\nlegibility (ink #111111 and the dark Bag button on every tone)');
 for (const r of ROUTES) {
@@ -57,6 +57,7 @@ console.log(`  (baseline: the original cream-on-white pill, distance ${BASELINE.
 const backdrop = [
   ['/', '#F2E38F', 'the sand hero'],
   ['/voices', '#EEECE6', 'the oat band'],
+  ['/about', '#EEECE6', 'the oat band'],
   ['/gifts', '#F3E0CE', 'the gift panel'],
   ['/shop', '#FFFFFF', 'the white page'],
   ['/journal', '#FFFFFF', 'the white page'],

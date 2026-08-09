@@ -715,3 +715,228 @@ export function Voices() {
     </div>
   );
 }
+
+/* ─────────────── ABOUT ─────────────── */
+
+// The repeating blocks on /about are jsonb arrays of short records. Editors
+// should not have to type JSON, so each one is edited as plain lines and
+// converted on the way in and out. A malformed line is dropped rather than
+// saved, and the count shown under each box is the parsed result — so what you
+// see is what the page will get.
+const linesToPairs = (t, ka, kb) =>
+  String(t || '')
+    .split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .map((l) => {
+      const i = l.indexOf('|');
+      if (i === -1) return null;
+      return { [ka]: l.slice(0, i).trim(), [kb]: l.slice(i + 1).trim() };
+    })
+    .filter((r) => r && r[ka] && r[kb]);
+
+const pairsToLines = (rows, ka, kb) =>
+  (Array.isArray(rows) ? rows : []).map((r) => `${r[ka] ?? ''} | ${r[kb] ?? ''}`).join('\n');
+
+const textToParas = (t) =>
+  String(t || '')
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+const parasToText = (a) => (Array.isArray(a) ? a : []).join('\n\n');
+
+function PairField({ label: l, hint, value, onChange, rows = 5 }) {
+  return (
+    <div style={{ marginTop: 22 }}>
+      <div style={{ ...label, fontSize: 9, marginBottom: 6 }}>{l}</div>
+      <div style={{ fontSize: 11, color: '#6B6B68', marginBottom: 8 }}>{hint}</div>
+      <textarea
+        style={{ ...inputStyle, minHeight: rows * 26, lineHeight: 1.7, resize: 'vertical' }}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      />
+    </div>
+  );
+}
+
+export function About() {
+  const sb = supabaseBrowser();
+  const [a, setA] = useState(null);
+  const [statsText, setStatsText] = useState('');
+  const [bioText, setBioText] = useState('');
+  const [factsText, setFactsText] = useState('');
+  const [principlesText, setPrinciplesText] = useState('');
+  const [timelineText, setTimelineText] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+  const [saved, setSaved] = useState(false);
+
+  const load = useCallback(async () => {
+    const { data, error } = await sb.from('about_page').select('*').eq('id', 1).maybeSingle();
+    if (error) return setErr(error.message);
+    const row = data || {};
+    setA(row);
+    setStatsText(pairsToLines(row.stats, 'n', 'label'));
+    setBioText(parasToText(row.founder_bio));
+    setFactsText(pairsToLines(row.founder_facts, 'k', 'v'));
+    setPrinciplesText(pairsToLines(row.principles, 'title', 'body'));
+    setTimelineText(pairsToLines(row.timeline, 'year', 'text'));
+  }, [sb]);
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  if (!a) return <div style={{ fontSize: 13, color: '#6B6B68' }}>Loading…</div>;
+
+  const set = (k) => (v) => {
+    setSaved(false);
+    setA((prev) => ({ ...prev, [k]: v }));
+  };
+
+  const save = async () => {
+    setErr('');
+    setSaved(false);
+    if (!a.headline?.trim()) return setErr('The page needs a headline.');
+    setBusy(true);
+    const row = {
+      id: 1,
+      kicker: a.kicker,
+      headline: a.headline,
+      intro: a.intro,
+      stats: linesToPairs(statsText, 'n', 'label'),
+      founder_kicker: a.founder_kicker,
+      founder_name: a.founder_name,
+      founder_role: a.founder_role,
+      founder_quote: a.founder_quote,
+      founder_bio: textToParas(bioText),
+      founder_facts: linesToPairs(factsText, 'k', 'v'),
+      founder_photo_id: a.founder_photo_id || '',
+      founder_caption: a.founder_caption,
+      principles_title: a.principles_title,
+      principles_note: a.principles_note,
+      principles: linesToPairs(principlesText, 'title', 'body'),
+      where_kicker: a.where_kicker,
+      where_headline: a.where_headline,
+      where_body: a.where_body,
+      timeline: linesToPairs(timelineText, 'year', 'text'),
+      updated_at: new Date().toISOString(),
+    };
+    // upsert so a wiped table repairs itself on the next save rather than
+    // silently updating nothing.
+    const { error } = await sb.from('about_page').upsert(row, { onConflict: 'id' });
+    setBusy(false);
+    if (error) return setErr(error.message);
+    setSaved(true);
+    load();
+  };
+
+  const counts = {
+    stats: linesToPairs(statsText, 'n', 'label').length,
+    bio: textToParas(bioText).length,
+    facts: linesToPairs(factsText, 'k', 'v').length,
+    principles: linesToPairs(principlesText, 'title', 'body').length,
+    timeline: linesToPairs(timelineText, 'year', 'text').length,
+  };
+
+  return (
+    <div style={{ maxWidth: 760 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+        <div style={label}>The About page</div>
+        <a
+          href="/about"
+          target="_blank"
+          rel="noreferrer"
+          style={{ ...linkAction, borderBottomColor: '#B4B0A6' }}
+        >
+          View page ↗
+        </a>
+      </div>
+      <div style={{ fontSize: 12, lineHeight: 1.7, color: '#6B6B68', marginBottom: 26, maxWidth: '68ch' }}>
+        Everything on /about is edited here. Blocks left empty are not rendered as empty furniture —
+        they simply disappear from the page.
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <Field label="Kicker" value={a.kicker} onChange={set('kicker')} />
+        <Field label="Photo id · Cloudinary or Unsplash" value={a.founder_photo_id} onChange={set('founder_photo_id')} />
+        <Field label="Headline" value={a.headline} onChange={set('headline')} wide />
+        <Field label="Intro paragraph" value={a.intro} onChange={set('intro')} wide rows={3} />
+      </div>
+
+      <PairField
+        label={`Stats · ${counts.stats} shown`}
+        hint="One per line, as  figure | label   e.g.  2024 | First suitcase"
+        value={statsText}
+        onChange={(v) => { setSaved(false); setStatsText(v); }}
+        rows={4}
+      />
+
+      <div style={{ marginTop: 30, paddingTop: 22, borderTop: '1px solid #E8E8E5' }}>
+        <div style={{ ...label, marginBottom: 16 }}>The founder</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <Field label="Section kicker" value={a.founder_kicker} onChange={set('founder_kicker')} />
+          <Field label="Name" value={a.founder_name} onChange={set('founder_name')} />
+          <Field label="Role" value={a.founder_role} onChange={set('founder_role')} />
+          <Field label="Photo caption" value={a.founder_caption} onChange={set('founder_caption')} />
+          <Field label="Pull quote · no quotation marks needed" value={a.founder_quote} onChange={set('founder_quote')} wide rows={2} />
+        </div>
+        <div style={{ marginTop: 22 }}>
+          <div style={{ ...label, fontSize: 9, marginBottom: 6 }}>
+            Biography · one blank line between paragraphs ({counts.bio} paragraphs)
+          </div>
+          <textarea
+            style={{ ...inputStyle, minHeight: 200, lineHeight: 1.7, resize: 'vertical' }}
+            value={bioText}
+            onChange={(e) => { setSaved(false); setBioText(e.target.value); }}
+          />
+        </div>
+        <PairField
+          label={`Facts · ${counts.facts} shown`}
+          hint="One per line, as  label | value   e.g.  Based in | Gurugram, India"
+          value={factsText}
+          onChange={(v) => { setSaved(false); setFactsText(v); }}
+          rows={4}
+        />
+      </div>
+
+      <div style={{ marginTop: 30, paddingTop: 22, borderTop: '1px solid #E8E8E5' }}>
+        <div style={{ ...label, marginBottom: 16 }}>How we work</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <Field label="Section title" value={a.principles_title} onChange={set('principles_title')} />
+          <Field label="Note on the right" value={a.principles_note} onChange={set('principles_note')} />
+        </div>
+        <PairField
+          label={`Principles · ${counts.principles} shown`}
+          hint="One per line, as  title | body.  Four fit the row neatly; more will wrap."
+          value={principlesText}
+          onChange={(v) => { setSaved(false); setPrinciplesText(v); }}
+          rows={5}
+        />
+      </div>
+
+      <div style={{ marginTop: 30, paddingTop: 22, borderTop: '1px solid #E8E8E5' }}>
+        <div style={{ ...label, marginBottom: 16 }}>Where we are</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <Field label="Section kicker" value={a.where_kicker} onChange={set('where_kicker')} />
+          <Field label="Headline" value={a.where_headline} onChange={set('where_headline')} wide rows={2} />
+          <Field label="Body" value={a.where_body} onChange={set('where_body')} wide rows={3} />
+        </div>
+        <PairField
+          label={`Timeline · ${counts.timeline} entries`}
+          hint="One per line, as  year | what happened"
+          value={timelineText}
+          onChange={(v) => { setSaved(false); setTimelineText(v); }}
+          rows={6}
+        />
+      </div>
+
+      {err && <div style={{ fontSize: 13, color: '#B3402A', marginTop: 20 }}>{err}</div>}
+      <div style={{ marginTop: 26, display: 'flex', gap: 16, alignItems: 'center' }}>
+        <button style={{ ...btn, padding: '15px 34px', opacity: busy ? 0.6 : 1 }} onClick={save} disabled={busy}>
+          {busy ? 'Saving…' : 'Save the About page'}
+        </button>
+        {saved && <span style={{ fontSize: 12, color: '#2F6B4F' }}>Saved. Live within a minute.</span>}
+      </div>
+    </div>
+  );
+}
