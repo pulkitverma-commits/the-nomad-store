@@ -1,4 +1,5 @@
 import { getDrops } from '@/lib/supabase';
+import { NAV_RESERVE } from '@/lib/nav';
 import Countdown from '@/components/Countdown';
 import SubscribeForm from '@/components/SubscribeForm';
 
@@ -35,7 +36,16 @@ export default async function DropsPage() {
   const objectCount = drops.reduce((total, d) => total + objectsIn(d.note), 0);
   return (
     <main>
-      <section style={{ background: '#E8F0E6', color: '#111111', padding: '110px 40px' }}>
+      <section
+        style={{
+          background: '#E8F0E6',
+          color: '#111111',
+          // Runs the band up behind the floating header pill instead of
+          // leaving the pill's reserved strip showing as white. See lib/nav.js.
+          marginTop: -NAV_RESERVE,
+          padding: `${110 + NAV_RESERVE}px 40px 110px`,
+        }}
+      >
         <div style={{ maxWidth: 1560, margin: '0 auto' }}>
           <div style={{ fontSize: 10, letterSpacing: '0.3em', textTransform: 'uppercase', color: '#5A5A57', marginBottom: 26 }}>
             Nomad Drops

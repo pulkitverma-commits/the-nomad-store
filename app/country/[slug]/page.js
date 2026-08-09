@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { getProducts, supabase } from '@/lib/supabase';
 import { cld, countrySlug, COUNTRY_PHOTOS } from '@/lib/format';
 import ProductCard from '@/components/ProductCard';
+import { NAV_RESERVE } from '@/lib/nav';
 
 export const revalidate = 60;
 
@@ -62,7 +63,15 @@ export default async function CountryPage({ params }) {
 
   return (
     <main>
-      <section style={{ background: '#EEECE6', padding: '96px 40px' }}>
+      <section
+        style={{
+          background: '#EEECE6',
+          // Runs the band up behind the floating header pill instead of
+          // leaving the pill's reserved strip showing as white. See lib/nav.js.
+          marginTop: -NAV_RESERVE,
+          padding: `${96 + NAV_RESERVE}px 40px 96px`,
+        }}
+      >
         <div
           className="split"
           style={{

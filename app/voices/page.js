@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { getTestimonials } from '@/lib/supabase';
+import { NAV_RESERVE } from '@/lib/nav';
 
 // /voices — the letters people send after an object arrives.
 //
@@ -106,7 +107,15 @@ export default async function VoicesPage() {
 
   return (
     <main>
-      <section style={{ background: '#EEECE6', padding: '88px 40px 80px' }}>
+      <section
+        style={{
+          background: '#EEECE6',
+          // Runs the band up behind the floating header pill instead of
+          // leaving the pill's reserved strip showing as white. See lib/nav.js.
+          marginTop: -NAV_RESERVE,
+          padding: `${88 + NAV_RESERVE}px 40px 80px`,
+        }}
+      >
         <div style={{ maxWidth: 1180, margin: '0 auto', textAlign: 'center' }}>
           <div
             style={{

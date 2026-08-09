@@ -1,5 +1,6 @@
 import { getAbout } from '@/lib/supabase';
 import { img } from '@/lib/format';
+import { NAV_RESERVE } from '@/lib/nav';
 
 // /about — who runs the shop and how it buys.
 //
@@ -66,7 +67,15 @@ export default async function AboutPage() {
   return (
     <main>
       {/* ── Header band ── */}
-      <section style={{ background: '#EEECE6', padding: '88px 40px 80px' }}>
+      <section
+        style={{
+          background: '#EEECE6',
+          // Runs the band up behind the floating header pill instead of
+          // leaving the pill's reserved strip showing as white. See lib/nav.js.
+          marginTop: -NAV_RESERVE,
+          padding: `${88 + NAV_RESERVE}px 40px 80px`,
+        }}
+      >
         <div style={{ maxWidth: 1180, margin: '0 auto' }}>
           <div style={kickerStyle}>{a.kicker}</div>
           <h1
