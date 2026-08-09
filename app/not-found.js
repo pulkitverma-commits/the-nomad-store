@@ -102,7 +102,7 @@ export default function NotFound() {
         >
           If you followed a link from us to get here, write to
           {' '}
-          <a href="mailto:hello@thenomad.store" className="muted-link">hello@thenomad.store</a>
+          <a href="mailto:hype@thenomad.buzz" className="muted-link">hype@thenomad.buzz</a>
           {' '}
           and we will go and mend it.
         </div>

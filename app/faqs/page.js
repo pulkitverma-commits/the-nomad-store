@@ -133,7 +133,7 @@ export default function FaqsPage() {
 
       <Small>
         Still stuck? Write to{' '}
-        <a href="mailto:hello@thenomad.store" className="muted-link">hello@thenomad.store</a> — see
+        <a href="mailto:hype@thenomad.buzz" className="muted-link">hype@thenomad.buzz</a> — see
         the <Link href="/contact" className="muted-link">contact page</Link> for how quickly we
         answer, and when we do not.
       </Small>

@@ -28,10 +28,10 @@ export async function GET(req) {
 
   try {
     let mail;
-    if (kind === 'drops') mail = await dropEmail('preview@thenomad.store');
+    if (kind === 'drops') mail = await dropEmail('preview@thenomad.buzz');
     else if (kind === 'notify') {
       const { data } = await sb.from('coming_soon').select('name').limit(1).maybeSingle();
-      mail = await notifyEmail('preview@thenomad.store', data?.name || 'Kanazawa Wooden Tea Tray');
+      mail = await notifyEmail('preview@thenomad.buzz', data?.name || 'Kanazawa Wooden Tea Tray');
     } else if (kind === 'order') {
       const { data: products } = await sb.from('products').select('*').limit(2);
       const lines = (products || []).map((p, i) => ({ product: p, qty: i + 1, price: p.price }));
@@ -40,7 +40,7 @@ export async function GET(req) {
         {
           id: 'preview-0000-0000',
           full_name: 'Pulkit Verma',
-          email: 'preview@thenomad.store',
+          email: 'preview@thenomad.buzz',
           mobile: '+91 90000 00000',
           address: '12 Hauz Khas Village',
           city: 'New Delhi',
@@ -63,7 +63,7 @@ export async function GET(req) {
           id: '00000000-0000-0000-0000-000000000000',
           lookup_token: 'preview-token',
           full_name: 'Pulkit Verma',
-          email: 'preview@thenomad.store',
+          email: 'preview@thenomad.buzz',
           address: '12 Hauz Khas Village',
           city: 'New Delhi',
           state: 'Delhi',
@@ -84,7 +84,7 @@ export async function GET(req) {
       const { data: drop } = await sb.from('drops').select('*').limit(1).maybeSingle();
       const { data: products } = await sb.from('products').select('*').gt('stock', 0).limit(4);
       mail = await dropDayEmail(drop || { drop_no: 'Drop 006', city: 'Tokyo', note: '28 objects' }, products || [], null);
-    } else mail = await welcomeEmail('preview@thenomad.store');
+    } else mail = await welcomeEmail('preview@thenomad.buzz');
 
     return new Response(
       `<!--  SUBJECT: ${mail.subject}  -->\n${mail.html}`,

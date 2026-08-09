@@ -19,7 +19,7 @@ export default function PrivacyPage() {
         This page describes what The Nomad does with your data. It is written to be accurate rather
         than comprehensive-sounding: everything below is something the site actually does. If you
         want anything deleted, email{' '}
-        <a href="mailto:hello@thenomad.store" className="muted-link">hello@thenomad.store</a> and we
+        <a href="mailto:hype@thenomad.buzz" className="muted-link">hype@thenomad.buzz</a> and we
         will do it within seven working days and tell you when it is done.
       </P>
 

@@ -16,9 +16,9 @@ export default function TermsPage() {
       updated="8 August 2026"
     >
       <P>
-        These terms apply when you buy something from thenomad.store. They are between you and The
+        These terms apply when you buy something from thenomad.buzz. They are between you and The
         Nomad, a small trading business based in New Delhi, India. If anything here is unclear,
-        email <a href="mailto:hello@thenomad.store" className="muted-link">hello@thenomad.store</a>{' '}
+        email <a href="mailto:hype@thenomad.buzz" className="muted-link">hype@thenomad.buzz</a>{' '}
         and we will explain it in fewer words.
       </P>
 

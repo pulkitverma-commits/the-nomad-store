@@ -30,7 +30,7 @@ export default function ReturnsPage() {
       />
       <P>
         To start one, email{' '}
-        <a href="mailto:hello@thenomad.store" className="muted-link">hello@thenomad.store</a> with
+        <a href="mailto:hype@thenomad.buzz" className="muted-link">hype@thenomad.buzz</a> with
         your order number and which object it is. We will reply with an address and, where the
         courier allows it, arrange a pickup. Return postage is yours unless the object arrived
         damaged or we sent the wrong thing, in which case it is ours.

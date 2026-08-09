@@ -78,7 +78,7 @@ export default function ShippingPage() {
         You get an email when the order is placed and a second one with a tracking number when it
         leaves us, sent through Mandrill. If the second email has not arrived within four working
         days, something has gone wrong at our end and we would genuinely like to know — write to{' '}
-        <a href="mailto:hello@thenomad.store" className="muted-link">hello@thenomad.store</a>.
+        <a href="mailto:hype@thenomad.buzz" className="muted-link">hype@thenomad.buzz</a>.
       </P>
 
       <H>Cash on delivery</H>

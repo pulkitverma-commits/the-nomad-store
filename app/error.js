@@ -79,7 +79,7 @@ export default function Error({ error, reset }) {
           style={{ fontStyle: 'italic', fontSize: 17, color: '#6B6B68', lineHeight: 1.6 }}
         >
           If it keeps happening, write to{' '}
-          <a href="mailto:hello@thenomad.store" className="muted-link">hello@thenomad.store</a> and
+          <a href="mailto:hype@thenomad.buzz" className="muted-link">hype@thenomad.buzz</a> and
           tell us what you were trying to reach.
         </div>
       </div>

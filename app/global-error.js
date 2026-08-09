@@ -59,10 +59,10 @@ export default function GlobalError({ error, reset }) {
             Something failed before the page could be built. It is our end, not yours. Try again in
             a moment — and if it is still like this, write to{' '}
             <a
-              href="mailto:hello@thenomad.store"
+              href="mailto:hype@thenomad.buzz"
               style={{ color: '#111111', textDecoration: 'underline' }}
             >
-              hello@thenomad.store
+              hype@thenomad.buzz
             </a>
             .
           </p>

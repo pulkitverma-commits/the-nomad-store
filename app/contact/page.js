@@ -4,7 +4,7 @@ import { PolicyPage, H, P, Small, Rows } from '@/components/PolicyPage';
 export const metadata = {
   title: 'Contact',
   description:
-    'Write to hello@thenomad.store. One reply, from one of two people, usually within a working day — slower when we are on a collection trip. Studio address in New Delhi.',
+    'Write to hype@thenomad.buzz. One reply, from one of two people, usually within a working day — slower when we are on a collection trip. Studio address in New Delhi.',
 };
 
 export default function ContactPage() {
@@ -39,7 +39,7 @@ export default function ContactPage() {
           Write to us
         </div>
         <a
-          href="mailto:hello@thenomad.store"
+          href="mailto:hype@thenomad.buzz"
           className="serif"
           style={{
             fontSize: 40,
@@ -50,7 +50,7 @@ export default function ContactPage() {
             wordBreak: 'break-word',
           }}
         >
-          hello@thenomad.store
+          hype@thenomad.buzz
         </a>
         <div style={{ fontSize: 13, lineHeight: 1.85, color: '#6B6B68', marginTop: 24 }}>
           Include your order number if there is one. If it is about a specific object, the object
