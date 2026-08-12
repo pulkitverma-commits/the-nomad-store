@@ -8,7 +8,8 @@ const BASE = SITE_URL;
 // Static routes that are indexable and worth listing. Everything absent from
 // here is absent on purpose: /checkout, /account/**, /order/**, /order-lookup,
 // /signin, /saved, /unsubscribe and /admin all send `noindex`, and a noindexed
-// URL in a sitemap is a direct contradiction for a crawler to resolve.
+// URL in a sitemap is a direct contradiction for a crawler to resolve. /about
+// is absent for the same reason — it is hidden for now, not retired.
 //
 // No `lastModified` on any of these. Nothing in the codebase records when a
 // static page's copy last changed, and stamping them with the deploy date
@@ -21,7 +22,6 @@ const STATIC = [
   ['/drops', 0.7, 'weekly'],
   ['/journal', 0.7, 'weekly'],
   ['/world', 0.6, 'monthly'],
-  ['/about', 0.6, 'monthly'],
   ['/voices', 0.6, 'monthly'],
   ['/soon', 0.5, 'weekly'],
   ['/faqs', 0.5, 'monthly'],

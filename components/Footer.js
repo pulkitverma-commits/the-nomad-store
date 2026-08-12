@@ -49,7 +49,9 @@ export default function Footer() {
             <Link href="/drops">Nomad Drops</Link>
             <Link href="/soon">Coming Home Soon</Link>
             <Link href="/voices">Voices</Link>
-            <Link href="/about">About</Link>
+            {/* /about is hidden for now — unlinked here, noindexed, and out of
+                the sitemap. The page and its admin tab are untouched, so the
+                link comes back by restoring this one line. */}
           </div>
         </div>
         <div>

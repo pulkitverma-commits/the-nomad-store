@@ -17,6 +17,11 @@ export const metadata = {
     'The Nomad buys small, buys directly, and pays workshops upfront. Who runs it, how it works, and where it has been since 2024.',
   alternates: { canonical: '/about' },
   openGraph: { url: '/about', type: 'website', siteName: 'The Nomad' },
+  // Hidden, not deleted. The URL still works for anyone holding it and the
+  // About tab in the back office still edits it — it is just off the footer,
+  // out of the sitemap and out of the index. `follow` stays on so the links
+  // out of the page still carry weight while Google drops the page itself.
+  robots: { index: false, follow: true },
 };
 
 const INK = '#111111';
